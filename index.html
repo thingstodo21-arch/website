@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flyify — Free Merch For Your Business</title>
+    <link rel="canonical" href="https://flyify.org">
+    <meta name="description" content="Flyify designs and produces branded merchandise for your business, for free. Zero cost, zero risk. Built for Chicago's independent businesses.">
+    <meta property="og:title" content="Flyify — Free Merch For Your Business">
+    <meta property="og:description" content="We design and produce branded clothing for your business, for free. Zero cost. Zero risk. Built for Chicago.">
+    <meta property="og:url" content="https://flyify.org">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:        #0D1A12;
+            --bg-2:      #111F16;
+            --gold:      #C9963F;
+            --gold-lt:   #D4A84B;
+            --text:      #F0EBE1;
+            --muted:     #7A8C7E;
+            --dim:       #2E3D32;
+            --border:    #1C2B20;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 300;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Atmospheric background mesh */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 90% 70% at 100% 0%,   rgba(201,150,63,0.10) 0%, transparent 55%),
+                radial-gradient(ellipse 60% 50% at 0%   100%, rgba(30,80,45,0.35)  0%, transparent 60%),
+                radial-gradient(ellipse 80% 60% at 50%  50%,  rgba(15,50,25,0.20)  0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Grain texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Lift all content above the mesh */
+        nav, .hero, .section, .cta-section, footer {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 22px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(8,8,7,0.96) 0%, rgba(8,8,7,0) 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .logo {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            font-size: 17px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--text);
+        }
+        .logo span { color: var(--gold); }
+
+        .nav-links {
+            display: flex;
+            gap: 36px;
+            list-style: none;
+            align-items: center;
+        }
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+        .nav-cta {
+            color: var(--gold) !important;
+            border: 1px solid rgba(201,150,63,0.35);
+            padding: 9px 22px;
+            transition: background 0.2s, color 0.2s !important;
+        }
+        .nav-cta:hover {
+            background: var(--gold) !important;
+            color: var(--bg) !important;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 160px 60px 110px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 75% 35%, rgba(201,150,63,0.07) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,150,63,0.03) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .hero-eyebrow {
+            font-size: 10px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 36px;
+            opacity: 0;
+            animation: fadeUp 0.9s ease forwards 0.15s;
+        }
+
+        .hero-headline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(54px, 7.5vw, 100px);
+            font-weight: 300;
+            line-height: 1.03;
+            letter-spacing: -0.025em;
+            max-width: 920px;
+            margin-bottom: 36px;
+            opacity: 0;
+            animation: fadeUp 0.9s ease forwards 0.35s;
+        }
+        .hero-headline em {
+            font-style: italic;
+            color: var(--gold);
+        }
+
+        .hero-sub {
+            font-size: 15px;
+            color: var(--muted);
+            max-width: 480px;
+            line-height: 1.8;
+            margin-bottom: 56px;
+            opacity: 0;
+            animation: fadeUp 0.9s ease forwards 0.55s;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            opacity: 0;
+            animation: fadeUp 0.9s ease forwards 0.7s;
+        }
+
+        .btn {
+            display: inline-block;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-gold {
+            background: var(--gold);
+            color: var(--bg);
+            padding: 16px 38px;
+        }
+        .btn-gold:hover {
+            background: var(--gold-lt);
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            color: var(--muted);
+            border-bottom: 1px solid var(--dim);
+            padding-bottom: 2px;
+        }
+        .btn-outline:hover { color: var(--text); border-color: var(--muted); }
+
+        .hero-meta {
+            position: absolute;
+            bottom: 48px;
+            right: 60px;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--dim);
+            opacity: 0;
+            animation: fadeUp 0.9s ease forwards 0.9s;
+        }
+
+        /* ── DIVIDER ── */
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── SECTION BASE ── */
+        .section {
+            padding: 110px 60px;
+            border-top: 1px solid var(--border);
+        }
+
+        .label {
+            font-size: 10px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 64px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .label::after {
+            content: '';
+            display: block;
+            width: 36px;
+            height: 1px;
+            background: var(--gold);
+            opacity: 0.35;
+        }
+        .label-center {
+            justify-content: center;
+        }
+        .label-center::after { display: none; }
+
+        /* ── HOW IT WORKS ── */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .step {
+            padding: 0 40px;
+            border-right: 1px solid var(--border);
+        }
+        .step:first-child { padding-left: 0; }
+        .step:last-child { padding-right: 0; border-right: none; }
+
+        .step-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 72px;
+            font-weight: 300;
+            color: var(--dim);
+            line-height: 1;
+            margin-bottom: 28px;
+            transition: color 0.3s;
+        }
+        .step:hover .step-num { color: var(--gold); }
+
+        .step-title {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            color: var(--text);
+        }
+        .step-body {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.8;
+        }
+
+        /* ── TWO COL ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: start;
+        }
+
+        .section-headline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(38px, 4vw, 58px);
+            font-weight: 300;
+            line-height: 1.12;
+            letter-spacing: -0.015em;
+        }
+        .section-headline em {
+            font-style: italic;
+            color: var(--gold);
+        }
+
+        .check-list {
+            list-style: none;
+        }
+        .check-list li {
+            font-size: 15px;
+            color: var(--muted);
+            padding: 18px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            transition: color 0.2s;
+        }
+        .check-list li:hover { color: var(--text); }
+        .check-list li::before {
+            content: '—';
+            color: var(--gold);
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        /* ── COVERS GRID ── */
+        .covers-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+        }
+
+        .cover-item {
+            background: var(--bg);
+            padding: 44px 40px;
+            transition: background 0.25s;
+        }
+        .cover-item:hover { background: var(--bg-2); }
+
+        .cover-glyph {
+            font-size: 18px;
+            color: var(--gold);
+            margin-bottom: 22px;
+            opacity: 0.7;
+        }
+        .cover-title {
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+        .cover-desc {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        /* ── WHO ── */
+        .industries {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .tag {
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 11px 22px;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            transition: all 0.2s;
+            cursor: default;
+        }
+        .tag:hover {
+            border-color: rgba(201,150,63,0.4);
+            color: var(--text);
+            background: rgba(201,150,63,0.04);
+        }
+
+        .pullquote {
+            margin-top: 56px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(20px, 2.2vw, 26px);
+            font-weight: 300;
+            font-style: italic;
+            color: var(--muted);
+            line-height: 1.55;
+            max-width: 620px;
+            padding-left: 28px;
+            border-left: 2px solid var(--gold);
+        }
+
+        /* ── CTA ── */
+        .cta-section {
+            text-align: center;
+            background: var(--bg-2);
+            padding: 120px 60px;
+            border-top: 1px solid var(--border);
+        }
+
+        .cta-headline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(48px, 6.5vw, 88px);
+            font-weight: 300;
+            line-height: 1.08;
+            letter-spacing: -0.02em;
+            margin-bottom: 28px;
+        }
+        .cta-headline em {
+            font-style: italic;
+            color: var(--gold);
+        }
+
+        .cta-sub {
+            font-size: 15px;
+            color: var(--muted);
+            max-width: 420px;
+            margin: 0 auto 52px;
+            line-height: 1.8;
+        }
+
+        .cta-note {
+            display: block;
+            margin-top: 28px;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--dim);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .cta-note:hover { color: var(--gold); }
+
+        /* ── CONTACT FORM ── */
+        .contact-form {
+            max-width: 520px;
+            margin: 0 auto;
+            text-align: left;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 300;
+            padding: 14px 16px;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+            width: 100%;
+            -webkit-appearance: none;
+        }
+        .form-group select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A8C7E' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+        .form-group select option { background: #111F16; color: var(--text); }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: rgba(201,150,63,0.5);
+            background: rgba(255,255,255,0.06);
+        }
+        .form-group textarea { resize: none; height: 110px; }
+        .form-submit {
+            width: 100%;
+            margin-top: 8px;
+        }
+        .form-status {
+            margin-top: 18px;
+            font-size: 13px;
+            letter-spacing: 0.05em;
+            text-align: center;
+            min-height: 20px;
+            transition: opacity 0.3s;
+        }
+        .form-status.success { color: var(--gold); }
+        .form-status.error   { color: #e07070; }
+
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            padding: 40px 60px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-logo {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            font-size: 15px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--text);
+        }
+        .footer-logo span { color: var(--gold); }
+
+        .footer-sub {
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--dim);
+            margin-top: 5px;
+        }
+
+        .footer-right { text-align: right; }
+        .footer-right a {
+            font-size: 12px;
+            color: var(--dim);
+            text-decoration: none;
+            letter-spacing: 0.04em;
+            transition: color 0.2s;
+            display: block;
+        }
+        .footer-right a:hover { color: var(--gold); }
+        .footer-city {
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--dim);
+            margin-bottom: 4px;
+        }
+
+        /* ── SCROLL ANIMATIONS ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(22px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(26px);
+            transition: opacity 0.75s ease, transform 0.75s ease;
+        }
+        .reveal.in { opacity: 1; transform: translateY(0); }
+        .reveal-d1 { transition-delay: 0.08s; }
+        .reveal-d2 { transition-delay: 0.16s; }
+        .reveal-d3 { transition-delay: 0.24s; }
+        .reveal-d4 { transition-delay: 0.32s; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 960px) {
+            nav { padding: 20px 28px; }
+            .nav-links { display: none; }
+            .hero { padding: 130px 28px 90px; }
+            .hero-meta { right: 28px; }
+            .section { padding: 80px 28px; }
+            .steps {
+                grid-template-columns: 1fr 1fr;
+                gap: 48px 0;
+            }
+            .step {
+                padding: 0 28px;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 40px;
+            }
+            .step:first-child { padding-left: 0; }
+            .step:nth-child(odd) { padding-left: 0; padding-right: 28px; border-right: 1px solid var(--border); }
+            .step:nth-child(even) { padding-right: 0; }
+            .step:last-child, .step:nth-last-child(2) { border-bottom: none; }
+            .two-col { grid-template-columns: 1fr; gap: 56px; }
+            .covers-grid { grid-template-columns: 1fr; }
+            .cta-section { padding: 90px 28px; }
+            footer { padding: 32px 28px; flex-direction: column; gap: 20px; text-align: center; }
+            .footer-right { text-align: center; }
+        }
+
+        @media (max-width: 600px) {
+            .hero-headline { font-size: 48px; }
+            .hero-actions { flex-direction: column; align-items: flex-start; gap: 20px; }
+            .steps { grid-template-columns: 1fr; }
+            .step { border-right: none !important; padding-left: 0 !important; padding-right: 0 !important; }
+            .step:last-child { border-bottom: none; }
+            .covers-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <a href="#top" class="logo">Fly<span>ify</span></a>
+    <ul class="nav-links">
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#why">Why Flyify</a></li>
+        <li><a href="#who">Who We Work With</a></li>
+        <li><a href="#contact" class="nav-cta">Get In Touch</a></li>
+    </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+    <p class="hero-eyebrow">Free Merch For Your Business</p>
+    <h1 class="hero-headline">
+        Your business deserves<br>merch people <em>actually<br>want to wear.</em>
+    </h1>
+    <p class="hero-sub">
+        Flyify is a branded merchandise partnership company. We design and produce branded clothing for your business, for free — so you can sell it at zero risk.
+    </p>
+    <div class="hero-actions">
+        <a href="#contact" class="btn btn-gold">Partner With Us</a>
+        <a href="#how" class="btn btn-outline">See How It Works</a>
+    </div>
+    <span class="hero-meta">Chicago, IL · 2026</span>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+    <p class="label reveal">How It Works</p>
+    <div class="steps">
+        <div class="step reveal reveal-d1">
+            <div class="step-num">01</div>
+            <div class="step-title">We Partner</div>
+            <p class="step-body">Whether we reach out or you do, the first step is a simple conversation. No applications, no fees, no obligations.</p>
+        </div>
+        <div class="step reveal reveal-d2">
+            <div class="step-num">02</div>
+            <div class="step-title">We Design It</div>
+            <p class="step-body">Our team builds a collection around your business's identity and aesthetic — not a template.</p>
+        </div>
+        <div class="step reveal reveal-d3">
+            <div class="step-num">03</div>
+            <div class="step-title">We Fund &amp; Produce It</div>
+            <p class="step-body">Flyify pays for manufacturing and handles all production and quality control. Zero cost to you.</p>
+        </div>
+        <div class="step reveal reveal-d4">
+            <div class="step-num">04</div>
+            <div class="step-title">You Get Paid</div>
+            <p class="step-body">You sell it. Your community buys. Revenue comes in. We split it. We both win.</p>
+        </div>
+    </div>
+</section>
+
+<!-- WHY FLYIFY -->
+<section class="section" id="why">
+    <div class="two-col">
+        <div class="reveal">
+            <p class="label">Why Flyify</p>
+            <h2 class="section-headline">Built for businesses<br><em>with a community.</em></h2>
+        </div>
+        <div class="reveal reveal-d2">
+            <ul class="check-list">
+                <li>Free brand representation — no financial burden, no risk</li>
+                <li>Fashionable designs your community wants to wear</li>
+                <li>We only profit when your merch sells — full alignment</li>
+                <li>Built for local businesses, not global brands</li>
+                <li>Zero dollars out of your pocket. Ever.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- WHAT FLYIFY COVERS -->
+<section class="section" id="covers">
+    <p class="label reveal">We Handle Everything</p>
+    <div class="covers-grid">
+        <div class="cover-item reveal">
+            <div class="cover-glyph">✦</div>
+            <div class="cover-title">Creative Design</div>
+            <p class="cover-desc">In-house designers build a collection around your business — not a template.</p>
+        </div>
+        <div class="cover-item reveal reveal-d1">
+            <div class="cover-glyph">◈</div>
+            <div class="cover-title">Full Production Financing</div>
+            <p class="cover-desc">We put up every dollar of manufacturing cost. You never write a check.</p>
+        </div>
+        <div class="cover-item reveal reveal-d2">
+            <div class="cover-glyph">◎</div>
+            <div class="cover-title">Sold In Your Space</div>
+            <p class="cover-desc">Merch lives in your business — on the counter, on the rack, in front of the people who already love you.</p>
+        </div>
+        <div class="cover-item reveal reveal-d1">
+            <div class="cover-glyph">○</div>
+            <div class="cover-title">Zero Risk. Full Upside.</div>
+            <p class="cover-desc">You show up. Your regulars buy. You get paid. That's the whole deal.</p>
+        </div>
+    </div>
+</section>
+
+<!-- WHO WE WORK WITH -->
+<section class="section" id="who">
+    <p class="label reveal">Who We Work With</p>
+    <div class="industries reveal">
+        <span class="tag">Cafés &amp; Coffee Shops</span>
+        <span class="tag">Bars &amp; Nightlife</span>
+        <span class="tag">Restaurants &amp; Eateries</span>
+        <span class="tag">Gyms &amp; Fitness Studios</span>
+        <span class="tag">Wellness &amp; Recovery</span>
+        <span class="tag">Barbershops &amp; Salons</span>
+        <span class="tag">Retail &amp; Lifestyle Shops</span>
+        <span class="tag">Music &amp; Entertainment Venues</span>
+        <span class="tag">Studios &amp; Creative Spaces</span>
+        <span class="tag">+ Any Business With a Community</span>
+    </div>
+    <blockquote class="pullquote reveal">
+        "If your regulars have a name for themselves, a table they always sit at, or a reason to come back — your business has a community. We'll make the merch."
+    </blockquote>
+</section>
+
+<!-- CTA -->
+<div class="cta-section" id="contact">
+    <p class="label label-center reveal">Get In Touch</p>
+    <h2 class="cta-headline reveal">Ready to talk?<br><em>We'll handle everything.</em></h2>
+    <p class="cta-sub reveal">No fees. No obligations. Just a conversation about what your merch could look like.</p>
+
+    <form class="contact-form reveal" id="contactForm">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" placeholder="Jane Smith" required>
+            </div>
+            <div class="form-group">
+                <label for="business">Business Name</label>
+                <input type="text" id="business" name="business" placeholder="The Spot Chicago" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="you@yourbusiness.com" required>
+        </div>
+        <div class="form-group">
+            <label for="type">Business Type</label>
+            <select id="type" name="type">
+                <option value="" disabled selected>Select your category</option>
+                <option>Bar &amp; Nightlife</option>
+                <option>Gym &amp; Fitness Studio</option>
+                <option>Café &amp; Coffee Shop</option>
+                <option>Wellness &amp; Recovery Space</option>
+                <option>Plant &amp; Lifestyle Shop</option>
+                <option>Ice Cream &amp; Dessert</option>
+                <option>Restaurant &amp; Deli</option>
+                <option>Other</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="message">Anything else? (optional)</label>
+            <textarea id="message" name="message" placeholder="Tell us a bit about your business or what you're thinking..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-gold form-submit">Let's Talk</button>
+        <p class="form-status" id="formStatus"></p>
+    </form>
+</div>
+
+<!-- FOOTER -->
+<footer>
+    <div>
+        <div class="footer-logo">Fly<span>ify</span></div>
+        <p class="footer-sub">Free Merch For Your Business</p>
+    </div>
+    <div class="footer-right">
+        <p class="footer-city">Chicago, IL · 2026</p>
+        <a href="mailto:hello@flyify.com">hello@flyify.com</a>
+        <a href="https://flyify.org">flyify.org</a>
+    </div>
+</footer>
+
+<script>
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('in');
+        });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // ── CONTACT FORM ──
+    const SHEET_URL = 'https://script.google.com/macros/s/AKfycbytUTOGhfVnuDfmZ19ln8ptj5oJ6I8lDxbeiEV2FuBoTiNLF2js8bG1wHvt_dm9w_0Hdw/exec';
+
+    document.getElementById('contactForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn    = this.querySelector('button[type=submit]');
+        const status = document.getElementById('formStatus');
+        const data   = Object.fromEntries(new FormData(this));
+
+        btn.textContent = 'Sending...';
+        btn.style.opacity = '0.7';
+        btn.disabled = true;
+        status.className = 'form-status';
+        status.textContent = '';
+
+        try {
+            await fetch(SHEET_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...data, timestamp: new Date().toISOString() })
+            });
+            status.className = 'form-status success';
+            status.textContent = 'Got it — we\'ll be in touch soon.';
+            this.reset();
+        } catch (err) {
+            status.className = 'form-status error';
+            status.textContent = 'Something went wrong. Email us at hello@flyify.com';
+        } finally {
+            btn.textContent = 'Let\'s Talk';
+            btn.style.opacity = '1';
+            btn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
