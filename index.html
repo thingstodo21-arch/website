@@ -1,849 +1,1745 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flyify — Free Merch For Your Business</title>
-    <link rel="canonical" href="https://getflyify.com">
-    <meta name="description" content="Flyify designs and produces branded merchandise for your business, for free. Zero cost, zero risk. Built for Chicago's independent businesses.">
-    <meta property="og:title" content="Flyify — Free Merch For Your Business">
-    <meta property="og:description" content="We design and produce branded clothing for your business, for free. Zero cost. Zero risk. Built for Chicago.">
-    <meta property="og:url" content="https://getflyify.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg:        #0D1A12;
-            --bg-2:      #111F16;
-            --gold:      #C9963F;
-            --gold-lt:   #D4A84B;
-            --text:      #F0EBE1;
-            --muted:     #7A8C7E;
-            --dim:       #2E3D32;
-            --border:    #1C2B20;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roofer — Find Rooftops Around the World</title>
+<meta name="description" content="Discover, share, and explore the world's best rooftops. A social platform for rooftop lovers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root {
+  --bg:       #09090f;
+  --bg2:      #0f0f1a;
+  --bg3:      #14141f;
+  --surface:  #1a1a28;
+  --surface2: #222236;
+  --border:   rgba(255,255,255,0.08);
+  --border2:  rgba(255,255,255,0.13);
+  --amber:    #f59e0b;
+  --amber-lt: #fbbf24;
+  --sky:      #38bdf8;
+  --muted:    #6b7280;
+  --muted2:   #9ca3af;
+  --text:     #f1f5f9;
+  --text2:    #cbd5e1;
+  --red:      #ef4444;
+  --green:    #22c55e;
+  --radius:   12px;
+  --radius-sm:8px;
+}
 
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
 
-        html { scroll-behavior: smooth; }
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--surface2); border-radius:3px; }
 
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 300;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top:0; left:0; right:0;
+  z-index: 1000;
+  height: 60px;
+  background: rgba(9,9,15,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
 
-        /* Atmospheric background mesh */
-        body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 90% 70% at 100% 0%,   rgba(201,150,63,0.10) 0%, transparent 55%),
-                radial-gradient(ellipse 60% 50% at 0%   100%, rgba(30,80,45,0.35)  0%, transparent 60%),
-                radial-gradient(ellipse 80% 60% at 50%  50%,  rgba(15,50,25,0.20)  0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text);
+}
+.nav-logo-icon {
+  width: 30px; height: 30px;
+  background: var(--amber);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+}
+.nav-logo-text {
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
 
-        /* Grain texture overlay */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-            opacity: 0.04;
-            pointer-events: none;
-            z-index: 9999;
-        }
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+}
+.nav-tabs li a {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted2);
+  text-decoration: none;
+  transition: all 0.18s;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+.nav-tabs li a:hover { color: var(--text); background: var(--surface); }
+.nav-tabs li a.active { color: var(--text); background: var(--surface); }
+.nav-tabs li a .tab-icon { font-size: 15px; }
 
-        /* Lift all content above the mesh */
-        nav, .hero, .section, .cta-section, footer {
-            position: relative;
-            z-index: 1;
-        }
+.nav-right {
+  display: flex; align-items: center; gap: 12px;
+}
+.btn-post {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 16px;
+  background: var(--amber);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.1s;
+  font-family: inherit;
+}
+.btn-post:hover { background: var(--amber-lt); transform: translateY(-1px); }
 
-        /* ── NAV ── */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 100;
-            padding: 22px 60px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: linear-gradient(to bottom, rgba(8,8,7,0.96) 0%, rgba(8,8,7,0) 100%);
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-        }
+.avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  border: 2px solid var(--border2);
+  flex-shrink: 0;
+}
 
-        .logo {
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 500;
-            font-size: 17px;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            text-decoration: none;
-            color: var(--text);
-        }
-        .logo span { color: var(--gold); }
+/* ── VIEWS ── */
+.view { display: none; padding-top: 60px; min-height: 100vh; }
+.view.active { display: block; }
 
-        .nav-links {
-            display: flex;
-            gap: 36px;
-            list-style: none;
-            align-items: center;
-        }
-        .nav-links a {
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 12px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            transition: color 0.2s;
-        }
-        .nav-links a:hover { color: var(--text); }
-        .nav-cta {
-            color: var(--gold) !important;
-            border: 1px solid rgba(201,150,63,0.35);
-            padding: 9px 22px;
-            transition: background 0.2s, color 0.2s !important;
-        }
-        .nav-cta:hover {
-            background: var(--gold) !important;
-            color: var(--bg) !important;
-        }
+/* ── HERO ── */
+.hero {
+  position: relative;
+  height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 60px 48px;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(9,9,15,0.2) 0%, rgba(9,9,15,0.85) 70%, #09090f 100%),
+    radial-gradient(ellipse 80% 60% at 60% 30%, rgba(245,158,11,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 20% 80%, rgba(56,189,248,0.08) 0%, transparent 55%);
+  z-index: 0;
+}
+/* Simulated city skyline using CSS */
+.hero-skyline {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.hero-skyline::before {
+  content:'';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 55%;
+  background:
+    /* buildings silhouettes */
+    linear-gradient(to top,
+      #0d0d1a 0%,
+      transparent 100%
+    );
+  clip-path: polygon(
+    0% 100%, 0% 55%, 3% 55%, 3% 35%, 5% 35%, 5% 55%,
+    7% 55%, 7% 20%, 9% 20%, 9% 22%, 10% 22%, 10% 55%,
+    11% 55%, 11% 40%, 13% 40%, 13% 38%, 14% 38%, 14% 40%, 15% 40%, 15% 55%,
+    17% 55%, 17% 28%, 19% 28%, 19% 30%, 20% 30%, 20% 28%, 22% 28%, 22% 55%,
+    24% 55%, 24% 15%, 25% 15%, 25% 14%, 26% 14%, 26% 15%, 27% 15%, 27% 55%,
+    28% 55%, 28% 42%, 30% 42%, 30% 55%,
+    32% 55%, 32% 10%, 33% 10%, 33% 8%, 34% 8%, 34% 10%, 35% 10%, 35% 55%,
+    37% 55%, 37% 32%, 39% 32%, 39% 55%,
+    41% 55%, 41% 22%, 43% 22%, 43% 20%, 44% 20%, 44% 22%, 46% 22%, 46% 55%,
+    48% 55%, 48% 35%, 50% 35%, 50% 55%,
+    52% 55%, 52% 18%, 53% 18%, 53% 16%, 54% 16%, 54% 18%, 56% 18%, 56% 55%,
+    58% 55%, 58% 30%, 60% 30%, 60% 28%, 61% 28%, 61% 30%, 62% 30%, 62% 55%,
+    64% 55%, 64% 40%, 66% 40%, 66% 55%,
+    68% 55%, 68% 25%, 70% 25%, 70% 55%,
+    72% 55%, 72% 12%, 73% 12%, 73% 10%, 74% 10%, 74% 12%, 76% 12%, 76% 55%,
+    78% 55%, 78% 38%, 80% 38%, 80% 55%,
+    82% 55%, 82% 28%, 84% 28%, 84% 26%, 85% 26%, 85% 28%, 87% 28%, 87% 55%,
+    89% 55%, 89% 20%, 90% 20%, 90% 18%, 91% 18%, 91% 20%, 93% 20%, 93% 55%,
+    95% 55%, 95% 42%, 97% 42%, 97% 55%,
+    100% 55%, 100% 100%
+  );
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hero-eyebrow::before {
+  content:'';
+  width: 24px; height: 1px;
+  background: var(--amber);
+}
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(46px, 6vw, 82px);
+  font-weight: 600;
+  line-height: 1.07;
+  letter-spacing: -0.02em;
+  margin-bottom: 22px;
+  max-width: 720px;
+}
+.hero-title em { font-style: italic; color: var(--amber); }
+.hero-sub {
+  font-size: 16px;
+  color: var(--muted2);
+  max-width: 480px;
+  line-height: 1.75;
+  margin-bottom: 38px;
+}
+.hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+.btn-primary {
+  padding: 13px 28px;
+  background: var(--amber);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.18s, transform 0.1s;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.btn-primary:hover { background: var(--amber-lt); transform: translateY(-1px); }
+.btn-secondary {
+  padding: 13px 28px;
+  background: var(--surface);
+  color: var(--text2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.btn-secondary:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
 
-        /* ── HERO ── */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 160px 60px 110px;
-            position: relative;
-            overflow: hidden;
-        }
-        .hero::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background:
-                radial-gradient(ellipse 80% 60% at 75% 35%, rgba(201,150,63,0.07) 0%, transparent 70%),
-                radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,150,63,0.03) 0%, transparent 60%);
-            pointer-events: none;
-        }
+.hero-stats {
+  position: absolute;
+  bottom: 60px; right: 48px;
+  display: flex; gap: 36px;
+  z-index: 1;
+}
+.hero-stat { text-align: right; }
+.hero-stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+}
+.hero-stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
 
-        .hero-eyebrow {
-            font-size: 10px;
-            letter-spacing: 0.28em;
-            text-transform: uppercase;
-            color: var(--gold);
-            margin-bottom: 36px;
-            opacity: 0;
-            animation: fadeUp 0.9s ease forwards 0.15s;
-        }
+/* ── EXPLORE SECTION ── */
+.explore-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
 
-        .hero-headline {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(54px, 7.5vw, 100px);
-            font-weight: 300;
-            line-height: 1.03;
-            letter-spacing: -0.025em;
-            max-width: 920px;
-            margin-bottom: 36px;
-            opacity: 0;
-            animation: fadeUp 0.9s ease forwards 0.35s;
-        }
-        .hero-headline em {
-            font-style: italic;
-            color: var(--gold);
-        }
+.section-header {
+  padding: 48px 0 32px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.section-title span { color: var(--amber); font-style: italic; }
 
-        .hero-sub {
-            font-size: 15px;
-            color: var(--muted);
-            max-width: 480px;
-            line-height: 1.8;
-            margin-bottom: 56px;
-            opacity: 0;
-            animation: fadeUp 0.9s ease forwards 0.55s;
-        }
+/* ── SEARCH & FILTERS ── */
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.search-input-wrap {
+  flex: 1;
+  min-width: 220px;
+  position: relative;
+}
+.search-icon {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 15px;
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 11px 14px 11px 40px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.18s;
+}
+.search-input:focus { border-color: rgba(245,158,11,0.5); }
+.search-input::placeholder { color: var(--muted); }
 
-        .hero-actions {
-            display: flex;
-            gap: 24px;
-            align-items: center;
-            opacity: 0;
-            animation: fadeUp 0.9s ease forwards 0.7s;
-        }
+.filter-chips {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.chip {
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+.chip:hover { border-color: var(--border2); color: var(--text); }
+.chip.active {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #000;
+}
 
-        .btn {
-            display: inline-block;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 12px;
-            font-weight: 500;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            text-decoration: none;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-        }
-        .btn-gold {
-            background: var(--gold);
-            color: var(--bg);
-            padding: 16px 38px;
-        }
-        .btn-gold:hover {
-            background: var(--gold-lt);
-            transform: translateY(-1px);
-        }
-        .btn-outline {
-            color: var(--muted);
-            border-bottom: 1px solid var(--dim);
-            padding-bottom: 2px;
-        }
-        .btn-outline:hover { color: var(--text); border-color: var(--muted); }
+/* ── SPOT CARDS ── */
+.spots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
 
-        .hero-meta {
-            position: absolute;
-            bottom: 48px;
-            right: 60px;
-            font-size: 10px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--dim);
-            opacity: 0;
-            animation: fadeUp 0.9s ease forwards 0.9s;
-        }
+.spot-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+.spot-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border2);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
+.spot-img {
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg3);
+}
+.spot-img-bg {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 64px;
+  transition: transform 0.4s;
+}
+.spot-card:hover .spot-img-bg { transform: scale(1.06); }
+.spot-img-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.6) 100%);
+}
+.spot-badges {
+  position: absolute; top: 12px; left: 12px;
+  display: flex; gap: 6px;
+}
+.badge {
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+.badge-amber { background: rgba(245,158,11,0.85); color: #000; }
+.badge-sky   { background: rgba(56,189,248,0.75); color: #000; }
+.badge-green { background: rgba(34,197,94,0.75); color: #000; }
+.badge-purple { background: rgba(139,92,246,0.75); color: #fff; }
 
-        /* ── DIVIDER ── */
-        .divider {
-            width: 100%;
-            height: 1px;
-            background: var(--border);
-        }
+.spot-save {
+  position: absolute; top: 12px; right: 12px;
+  width: 32px; height: 32px;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.18s;
+  color: var(--text);
+}
+.spot-save:hover, .spot-save.saved { color: var(--amber); border-color: var(--amber); background: rgba(245,158,11,0.15); }
 
-        /* ── SECTION BASE ── */
-        .section {
-            padding: 110px 60px;
-            border-top: 1px solid var(--border);
-        }
+.spot-rating {
+  position: absolute; bottom: 12px; right: 12px;
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--amber);
+}
 
-        .label {
-            font-size: 10px;
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            color: var(--gold);
-            margin-bottom: 64px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .label::after {
-            content: '';
-            display: block;
-            width: 36px;
-            height: 1px;
-            background: var(--gold);
-            opacity: 0.35;
-        }
-        .label-center {
-            justify-content: center;
-        }
-        .label-center::after { display: none; }
+.spot-body { padding: 18px; }
+.spot-location {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 5px;
+}
+.spot-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.spot-desc {
+  font-size: 13px;
+  color: var(--muted2);
+  line-height: 1.65;
+  margin-bottom: 14px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.spot-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.spot-meta {
+  display: flex; align-items: center; gap: 14px;
+}
+.spot-meta-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.spot-meta-item span { font-size: 13px; }
+.spot-vibe {
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--bg2);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
 
-        /* ── HOW IT WORKS ── */
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-        }
+/* ── MAP VIEW ── */
+#map-view { height: 100vh; }
+.map-container {
+  height: calc(100vh - 60px);
+  position: relative;
+}
+#leaflet-map { height: 100%; width: 100%; }
 
-        .step {
-            padding: 0 40px;
-            border-right: 1px solid var(--border);
-        }
-        .step:first-child { padding-left: 0; }
-        .step:last-child { padding-right: 0; border-right: none; }
+.map-sidebar {
+  position: absolute;
+  top: 16px; left: 16px;
+  width: 320px;
+  background: rgba(9,9,15,0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  z-index: 500;
+  overflow: hidden;
+  max-height: calc(100vh - 92px);
+  display: flex; flex-direction: column;
+}
+.map-sidebar-header {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.map-sidebar-title {
+  font-size: 14px; font-weight: 600;
+  margin-bottom: 10px;
+}
+.map-list {
+  overflow-y: auto;
+  flex: 1;
+}
+.map-list-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.map-list-item:hover { background: var(--surface); }
+.map-list-item.active { background: rgba(245,158,11,0.08); border-left: 2px solid var(--amber); }
+.map-list-thumb {
+  width: 46px; height: 46px;
+  border-radius: var(--radius-sm);
+  background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.map-list-info { flex: 1; min-width: 0; }
+.map-list-name {
+  font-size: 13px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.map-list-loc {
+  font-size: 11px; color: var(--muted); margin-top: 2px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.map-list-rating {
+  font-size: 12px; font-weight: 600;
+  color: var(--amber);
+  display: flex; align-items: center; gap: 3px;
+}
 
-        .step-num {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 72px;
-            font-weight: 300;
-            color: var(--dim);
-            line-height: 1;
-            margin-bottom: 28px;
-            transition: color 0.3s;
-        }
-        .step:hover .step-num { color: var(--gold); }
+/* Leaflet popup overrides */
+.leaflet-popup-content-wrapper {
+  background: var(--surface) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: var(--radius) !important;
+  color: var(--text) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: 240px !important;
+}
+.leaflet-popup-tip { background: var(--surface) !important; }
+.leaflet-popup-close-button { color: var(--muted2) !important; top: 10px !important; right: 12px !important; }
 
-        .step-title {
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            margin-bottom: 14px;
-            color: var(--text);
-        }
-        .step-body {
-            font-size: 14px;
-            color: var(--muted);
-            line-height: 1.8;
-        }
+.popup-inner { padding: 16px; }
+.popup-emoji { font-size: 32px; margin-bottom: 10px; }
+.popup-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.popup-loc { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+.popup-rating { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--amber); font-weight: 600; margin-bottom: 12px; }
+.popup-btn {
+  display: block; width: 100%;
+  padding: 9px;
+  background: var(--amber);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  text-align: center;
+  transition: background 0.18s;
+}
+.popup-btn:hover { background: var(--amber-lt); }
 
-        /* ── TWO COL ── */
-        .two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 80px;
-            align-items: start;
-        }
+/* Custom map marker */
+.roofer-marker {
+  width: 36px; height: 36px;
+  background: var(--amber);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 2px solid rgba(0,0,0,0.3);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 12px rgba(245,158,11,0.4);
+  transition: transform 0.2s;
+}
+.roofer-marker-inner {
+  transform: rotate(45deg);
+  font-size: 14px;
+}
+.roofer-marker.featured { background: var(--sky); box-shadow: 0 3px 12px rgba(56,189,248,0.4); }
 
-        .section-headline {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(38px, 4vw, 58px);
-            font-weight: 300;
-            line-height: 1.12;
-            letter-spacing: -0.015em;
-        }
-        .section-headline em {
-            font-style: italic;
-            color: var(--gold);
-        }
+/* ── FEED VIEW ── */
+.feed-wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
 
-        .check-list {
-            list-style: none;
-        }
-        .check-list li {
-            font-size: 15px;
-            color: var(--muted);
-            padding: 18px 0;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            transition: color 0.2s;
-        }
-        .check-list li:hover { color: var(--text); }
-        .check-list li::before {
-            content: '—';
-            color: var(--gold);
-            font-size: 11px;
-            flex-shrink: 0;
-        }
+.feed-header {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.feed-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+.feed-sub { font-size: 14px; color: var(--muted2); }
 
-        /* ── COVERS GRID ── */
-        .covers-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1px;
-            background: var(--border);
-            border: 1px solid var(--border);
-        }
+.stories-row {
+  display: flex; gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  scrollbar-width: none;
+}
+.stories-row::-webkit-scrollbar { display: none; }
+.story {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer; flex-shrink: 0;
+}
+.story-ring {
+  width: 58px; height: 58px;
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--amber), #f97316, #ec4899);
+}
+.story-avatar {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  border: 2px solid var(--bg);
+}
+.story-name { font-size: 10px; color: var(--muted2); text-align: center; max-width: 58px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .cover-item {
-            background: var(--bg);
-            padding: 44px 40px;
-            transition: background 0.25s;
-        }
-        .cover-item:hover { background: var(--bg-2); }
+.post-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 20px;
+  transition: border-color 0.18s;
+}
+.post-card:hover { border-color: var(--border2); }
 
-        .cover-glyph {
-            font-size: 18px;
-            color: var(--gold);
-            margin-bottom: 22px;
-            opacity: 0.7;
-        }
-        .cover-title {
-            font-size: 12px;
-            font-weight: 500;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            color: var(--text);
-        }
-        .cover-desc {
-            font-size: 13px;
-            color: var(--muted);
-            line-height: 1.7;
-        }
+.post-header {
+  display: flex; align-items: center;
+  padding: 14px 16px;
+  gap: 10px;
+}
+.post-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.post-user { flex: 1; }
+.post-username { font-size: 13px; font-weight: 600; }
+.post-time { font-size: 11px; color: var(--muted); }
+.post-location-badge {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--amber);
+  background: rgba(245,158,11,0.1);
+  border: 1px solid rgba(245,158,11,0.2);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 500;
+  cursor: pointer;
+}
 
-        /* ── WHO ── */
-        .industries {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .tag {
-            font-size: 11px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            padding: 11px 22px;
-            border: 1px solid var(--border);
-            color: var(--muted);
-            transition: all 0.2s;
-            cursor: default;
-        }
-        .tag:hover {
-            border-color: rgba(201,150,63,0.4);
-            color: var(--text);
-            background: rgba(201,150,63,0.04);
-        }
+.post-img {
+  height: 320px;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+}
+.post-img-bg {
+  font-size: 100px;
+  position: absolute;
+  opacity: 0.2;
+}
+.post-img-overlay-text {
+  position: relative; z-index: 1;
+  text-align: center;
+}
+.post-img-emoji { font-size: 72px; display: block; margin-bottom: 12px; }
+.post-img-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 600;
+  color: var(--text);
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+.post-img-city {
+  font-size: 12px; color: var(--muted2); margin-top: 4px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+}
+.post-img-gradient {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(245,158,11,0.08) 0%,
+    rgba(56,189,248,0.08) 50%,
+    rgba(139,92,246,0.08) 100%
+  );
+}
 
-        .pullquote {
-            margin-top: 56px;
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(20px, 2.2vw, 26px);
-            font-weight: 300;
-            font-style: italic;
-            color: var(--muted);
-            line-height: 1.55;
-            max-width: 620px;
-            padding-left: 28px;
-            border-left: 2px solid var(--gold);
-        }
+.post-actions {
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.action-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 12px;
+  border: none;
+  background: none;
+  color: var(--muted2);
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.18s;
+  font-family: inherit;
+}
+.action-btn:hover { background: var(--surface2); color: var(--text); }
+.action-btn.liked { color: var(--red); }
+.action-btn.liked:hover { color: var(--red); }
+.action-btn span { font-size: 16px; }
+.action-spacer { flex: 1; }
+.action-save { color: var(--muted); }
+.action-save.saved { color: var(--amber); }
 
-        /* ── CTA ── */
-        .cta-section {
-            text-align: center;
-            background: var(--bg-2);
-            padding: 120px 60px;
-            border-top: 1px solid var(--border);
-        }
+.post-body { padding: 14px 16px; }
+.post-likes { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text2); }
+.post-caption { font-size: 14px; color: var(--text2); line-height: 1.65; }
+.post-caption strong { color: var(--text); font-weight: 600; }
+.post-tags { margin-top: 8px; }
+.post-tag {
+  font-size: 13px; color: var(--sky); cursor: pointer;
+}
+.post-tag:hover { text-decoration: underline; }
 
-        .cta-headline {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(48px, 6.5vw, 88px);
-            font-weight: 300;
-            line-height: 1.08;
-            letter-spacing: -0.02em;
-            margin-bottom: 28px;
-        }
-        .cta-headline em {
-            font-style: italic;
-            color: var(--gold);
-        }
+.post-comments {
+  padding: 0 16px 14px;
+}
+.comment {
+  font-size: 13px; color: var(--muted2);
+  margin-bottom: 5px; line-height: 1.5;
+}
+.comment strong { color: var(--text2); font-weight: 600; cursor: pointer; }
+.comment strong:hover { color: var(--text); }
+.view-all-comments {
+  font-size: 12px; color: var(--muted);
+  cursor: pointer; margin-bottom: 8px;
+}
+.view-all-comments:hover { color: var(--muted2); }
 
-        .cta-sub {
-            font-size: 15px;
-            color: var(--muted);
-            max-width: 420px;
-            margin: 0 auto 52px;
-            line-height: 1.8;
-        }
+.post-comment-input {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+.comment-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #fff;
+}
+.comment-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+.comment-input::placeholder { color: var(--muted); }
+.comment-submit { font-size: 13px; color: var(--amber); font-weight: 600; cursor: pointer; border: none; background: none; font-family: inherit; }
+.comment-submit:hover { color: var(--amber-lt); }
 
-        .cta-note {
-            display: block;
-            margin-top: 28px;
-            font-size: 12px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--dim);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .cta-note:hover { color: var(--gold); }
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
 
-        /* ── CONTACT FORM ── */
-        .contact-form {
-            max-width: 520px;
-            margin: 0 auto;
-            text-align: left;
-        }
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-bottom: 14px;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-            margin-bottom: 14px;
-        }
-        .form-group label {
-            font-size: 10px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid var(--border);
-            color: var(--text);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 14px;
-            font-weight: 300;
-            padding: 14px 16px;
-            outline: none;
-            transition: border-color 0.2s, background 0.2s;
-            width: 100%;
-            -webkit-appearance: none;
-        }
-        .form-group select {
-            cursor: pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A8C7E' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 16px center;
-            padding-right: 40px;
-        }
-        .form-group select option { background: #111F16; color: var(--text); }
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            border-color: rgba(201,150,63,0.5);
-            background: rgba(255,255,255,0.06);
-        }
-        .form-group textarea { resize: none; height: 110px; }
-        .form-submit {
-            width: 100%;
-            margin-top: 8px;
-        }
-        .form-status {
-            margin-top: 18px;
-            font-size: 13px;
-            letter-spacing: 0.05em;
-            text-align: center;
-            min-height: 20px;
-            transition: opacity 0.3s;
-        }
-        .form-status.success { color: var(--gold); }
-        .form-status.error   { color: #e07070; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 660px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(16px);
+  transition: transform 0.2s;
+}
+.modal-overlay.open .modal { transform: translateY(0); }
 
-        @media (max-width: 600px) {
-            .form-row { grid-template-columns: 1fr; }
-        }
+.modal-hero {
+  height: 280px;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  background: var(--bg3);
+}
+.modal-hero-emoji { font-size: 100px; }
+.modal-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, var(--surface) 100%);
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 32px; height: 32px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 50%;
+  color: var(--text);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.18s;
+}
+.modal-close:hover { background: rgba(0,0,0,0.8); }
 
-        /* ── FOOTER ── */
-        footer {
-            padding: 40px 60px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+.modal-body { padding: 24px; }
+.modal-location { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+.modal-name { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 600; margin-bottom: 12px; line-height: 1.2; }
+.modal-rating-row {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 18px; flex-wrap: wrap;
+}
+.modal-stars { display: flex; gap: 3px; }
+.star { color: var(--amber); font-size: 15px; }
+.star.empty { color: var(--muted); }
+.modal-rating-num { font-size: 14px; font-weight: 600; color: var(--amber); }
+.modal-reviews { font-size: 13px; color: var(--muted); }
+.modal-badge { padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; }
 
-        .footer-logo {
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 500;
-            font-size: 15px;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: var(--text);
-        }
-        .footer-logo span { color: var(--gold); }
+.modal-desc { font-size: 14px; color: var(--muted2); line-height: 1.75; margin-bottom: 24px; }
 
-        .footer-sub {
-            font-size: 10px;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--dim);
-            margin-top: 5px;
-        }
+.modal-info-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-bottom: 24px;
+}
+.modal-info-item {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+.modal-info-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+.modal-info-value { font-size: 14px; font-weight: 500; color: var(--text2); }
 
-        .footer-right { text-align: right; }
-        .footer-right a {
-            font-size: 12px;
-            color: var(--dim);
-            text-decoration: none;
-            letter-spacing: 0.04em;
-            transition: color 0.2s;
-            display: block;
-        }
-        .footer-right a:hover { color: var(--gold); }
-        .footer-city {
-            font-size: 10px;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--dim);
-            margin-bottom: 4px;
-        }
+.modal-actions { display: flex; gap: 10px; }
+.modal-actions .btn-primary { flex: 1; justify-content: center; }
+.modal-actions .btn-secondary { flex-shrink: 0; }
 
-        /* ── SCROLL ANIMATIONS ── */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(22px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
+/* ── POST MODAL ── */
+.post-modal-body { padding: 24px; }
+.post-modal-title { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 20px; }
+.upload-zone {
+  border: 2px dashed var(--border2);
+  border-radius: var(--radius);
+  height: 180px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; cursor: pointer; margin-bottom: 16px;
+  transition: border-color 0.18s, background 0.18s;
+  color: var(--muted);
+}
+.upload-zone:hover { border-color: var(--amber); background: rgba(245,158,11,0.04); color: var(--muted2); }
+.upload-icon { font-size: 36px; }
+.upload-text { font-size: 14px; }
+.upload-sub { font-size: 12px; }
+.post-input, .post-textarea, .post-select {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.18s;
+  margin-bottom: 12px;
+}
+.post-input:focus, .post-textarea:focus, .post-select:focus { border-color: rgba(245,158,11,0.5); }
+.post-input::placeholder, .post-textarea::placeholder { color: var(--muted); }
+.post-textarea { resize: none; height: 90px; }
+.post-select option { background: var(--surface); }
+.post-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; display: block; }
+.post-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
 
-        .reveal {
-            opacity: 0;
-            transform: translateY(26px);
-            transition: opacity 0.75s ease, transform 0.75s ease;
-        }
-        .reveal.in { opacity: 1; transform: translateY(0); }
-        .reveal-d1 { transition-delay: 0.08s; }
-        .reveal-d2 { transition-delay: 0.16s; }
-        .reveal-d3 { transition-delay: 0.24s; }
-        .reveal-d4 { transition-delay: 0.32s; }
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 12px 20px;
+  font-size: 14px;
+  color: var(--text);
+  z-index: 3000;
+  display: flex; align-items: center; gap: 10px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast-icon { font-size: 18px; }
 
-        /* ── RESPONSIVE ── */
-        @media (max-width: 960px) {
-            nav { padding: 20px 28px; }
-            .nav-links { display: none; }
-            .hero { padding: 130px 28px 90px; }
-            .hero-meta { right: 28px; }
-            .section { padding: 80px 28px; }
-            .steps {
-                grid-template-columns: 1fr 1fr;
-                gap: 48px 0;
-            }
-            .step {
-                padding: 0 28px;
-                border-right: none;
-                border-bottom: 1px solid var(--border);
-                padding-bottom: 40px;
-            }
-            .step:first-child { padding-left: 0; }
-            .step:nth-child(odd) { padding-left: 0; padding-right: 28px; border-right: 1px solid var(--border); }
-            .step:nth-child(even) { padding-right: 0; }
-            .step:last-child, .step:nth-last-child(2) { border-bottom: none; }
-            .two-col { grid-template-columns: 1fr; gap: 56px; }
-            .covers-grid { grid-template-columns: 1fr; }
-            .cta-section { padding: 90px 28px; }
-            footer { padding: 32px 28px; flex-direction: column; gap: 20px; text-align: center; }
-            .footer-right { text-align: center; }
-        }
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .nav-tabs { display: none; }
+  .hero { padding: 40px 24px; }
+  .hero-stats { bottom: 40px; right: 24px; gap: 20px; }
+  .explore-wrap { padding: 0 16px 60px; }
+  .map-sidebar { width: calc(100% - 32px); top: auto; bottom: 16px; left: 16px; max-height: 220px; }
+  .feed-wrap { padding: 24px 16px 60px; }
+  .modal-info-grid { grid-template-columns: 1fr; }
+}
 
-        @media (max-width: 600px) {
-            .hero-headline { font-size: 48px; }
-            .hero-actions { flex-direction: column; align-items: flex-start; gap: 20px; }
-            .steps { grid-template-columns: 1fr; }
-            .step { border-right: none !important; padding-left: 0 !important; padding-right: 0 !important; }
-            .step:last-child { border-bottom: none; }
-            .covers-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+/* ── MOBILE NAV ── */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(9,9,15,0.95);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  padding: 8px 0;
+}
+.mobile-nav-inner { display: flex; justify-content: space-around; }
+.mobile-nav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 20px;
+  border: none; background: none;
+  color: var(--muted);
+  font-size: 20px; cursor: pointer;
+  transition: color 0.18s;
+  font-family: inherit;
+}
+.mobile-nav-btn.active { color: var(--amber); }
+.mobile-nav-label { font-size: 10px; font-weight: 500; }
+
+@media (max-width: 768px) {
+  .mobile-nav { display: block; }
+  .view { padding-bottom: 72px; }
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.fade-up { animation: fadeUp 0.6s ease forwards; }
+.fade-up-d1 { animation-delay: 0.1s; opacity: 0; }
+.fade-up-d2 { animation-delay: 0.2s; opacity: 0; }
+.fade-up-d3 { animation-delay: 0.3s; opacity: 0; }
+</style>
 </head>
 <body>
 
 <!-- NAV -->
 <nav>
-    <a href="#top" class="logo">Fly<span>ify</span></a>
-    <ul class="nav-links">
-        <li><a href="#how">How It Works</a></li>
-        <li><a href="#why">Why Flyify</a></li>
-        <li><a href="#who">Who We Work With</a></li>
-        <li><a href="#contact" class="nav-cta">Get In Touch</a></li>
-    </ul>
+  <a href="#" class="nav-logo" onclick="switchView('discover')">
+    <div class="nav-logo-icon">🏙️</div>
+    <span class="nav-logo-text">Roofer</span>
+  </a>
+  <ul class="nav-tabs">
+    <li><a class="active" id="tab-discover" onclick="switchView('discover')"><span class="tab-icon">✦</span> Discover</a></li>
+    <li><a id="tab-map" onclick="switchView('map')"><span class="tab-icon">◎</span> Map</a></li>
+    <li><a id="tab-feed" onclick="switchView('feed')"><span class="tab-icon">◈</span> Feed</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="btn-post" onclick="openPostModal()">+ Post a Rooftop</button>
+    <div class="avatar">AJ</div>
+  </div>
 </nav>
 
-<!-- HERO -->
-<section class="hero" id="top">
-    <p class="hero-eyebrow">Free Merch For Your Business</p>
-    <h1 class="hero-headline">
-        Your business deserves<br>merch people <em>actually<br>want to wear.</em>
-    </h1>
-    <p class="hero-sub">
-        Flyify is a branded merchandise partnership company. We design and produce branded clothing for your business, for free — so you can sell it at zero risk.
-    </p>
-    <div class="hero-actions">
-        <a href="#contact" class="btn btn-gold">Partner With Us</a>
-        <a href="#how" class="btn btn-outline">See How It Works</a>
+<!-- DISCOVER VIEW -->
+<div class="view active" id="discover-view">
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-skyline"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow fade-up">The World's Rooftops</p>
+      <h1 class="hero-title fade-up fade-up-d1">
+        Every city has<br>a <em>rooftop</em> worth<br>finding.
+      </h1>
+      <p class="hero-sub fade-up fade-up-d2">
+        Discover, rate, and share the world's best rooftop bars, terraces, and viewpoints. Join a community of sky seekers.
+      </p>
+      <div class="hero-actions fade-up fade-up-d3">
+        <button class="btn-primary" onclick="switchView('map')">🗺 Explore Map</button>
+        <button class="btn-secondary" onclick="switchView('feed')">◈ See the Feed</button>
+      </div>
     </div>
-    <span class="hero-meta">Chicago, IL · 2026</span>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="section" id="how">
-    <p class="label reveal">How It Works</p>
-    <div class="steps">
-        <div class="step reveal reveal-d1">
-            <div class="step-num">01</div>
-            <div class="step-title">We Partner</div>
-            <p class="step-body">Whether we reach out or you do, the first step is a simple conversation. No applications, no fees, no obligations.</p>
-        </div>
-        <div class="step reveal reveal-d2">
-            <div class="step-num">02</div>
-            <div class="step-title">We Design It</div>
-            <p class="step-body">Our team builds a collection around your business's identity and aesthetic — not a template.</p>
-        </div>
-        <div class="step reveal reveal-d3">
-            <div class="step-num">03</div>
-            <div class="step-title">We Fund &amp; Produce It</div>
-            <p class="step-body">Flyify pays for manufacturing and handles all production and quality control. Zero cost to you.</p>
-        </div>
-        <div class="step reveal reveal-d4">
-            <div class="step-num">04</div>
-            <div class="step-title">You Get Paid</div>
-            <p class="step-body">You sell it. Your community buys. Revenue comes in. We split it. We both win.</p>
-        </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">2,841</div>
+        <div class="hero-stat-label">Rooftops</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">94</div>
+        <div class="hero-stat-label">Countries</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">18k</div>
+        <div class="hero-stat-label">Members</div>
+      </div>
     </div>
-</section>
+  </div>
 
-<!-- WHY FLYIFY -->
-<section class="section" id="why">
-    <div class="two-col">
-        <div class="reveal">
-            <p class="label">Why Flyify</p>
-            <h2 class="section-headline">Built for businesses<br><em>with a community.</em></h2>
-        </div>
-        <div class="reveal reveal-d2">
-            <ul class="check-list">
-                <li>Free brand representation — no financial burden, no risk</li>
-                <li>Fashionable designs your community wants to wear</li>
-                <li>We only profit when your merch sells — full alignment</li>
-                <li>Built for local businesses, not global brands</li>
-                <li>Zero dollars out of your pocket. Ever.</li>
-            </ul>
-        </div>
+  <div class="explore-wrap">
+    <div class="section-header">
+      <h2 class="section-title">Top Rooftops <span>Worldwide</span></h2>
     </div>
-</section>
 
-<!-- WHAT FLYIFY COVERS -->
-<section class="section" id="covers">
-    <p class="label reveal">We Handle Everything</p>
-    <div class="covers-grid">
-        <div class="cover-item reveal">
-            <div class="cover-glyph">✦</div>
-            <div class="cover-title">Creative Design</div>
-            <p class="cover-desc">In-house designers build a collection around your business — not a template.</p>
-        </div>
-        <div class="cover-item reveal reveal-d1">
-            <div class="cover-glyph">◈</div>
-            <div class="cover-title">Full Production Financing</div>
-            <p class="cover-desc">We put up every dollar of manufacturing cost. You never write a check.</p>
-        </div>
-        <div class="cover-item reveal reveal-d2">
-            <div class="cover-glyph">◎</div>
-            <div class="cover-title">Sold In Your Space</div>
-            <p class="cover-desc">Merch lives in your business — on the counter, on the rack, in front of the people who already love you.</p>
-        </div>
-        <div class="cover-item reveal reveal-d1">
-            <div class="cover-glyph">○</div>
-            <div class="cover-title">Zero Risk. Full Upside.</div>
-            <p class="cover-desc">You show up. Your regulars buy. You get paid. That's the whole deal.</p>
-        </div>
+    <div class="search-bar">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" placeholder="Search city, name, or vibe…" id="searchInput" oninput="filterSpots()">
+      </div>
     </div>
-</section>
 
-<!-- WHO WE WORK WITH -->
-<section class="section" id="who">
-    <p class="label reveal">Who We Work With</p>
-    <div class="industries reveal">
-        <span class="tag">Cafés &amp; Coffee Shops</span>
-        <span class="tag">Bars &amp; Nightlife</span>
-        <span class="tag">Restaurants &amp; Eateries</span>
-        <span class="tag">Gyms &amp; Fitness Studios</span>
-        <span class="tag">Wellness &amp; Recovery</span>
-        <span class="tag">Barbershops &amp; Salons</span>
-        <span class="tag">Retail &amp; Lifestyle Shops</span>
-        <span class="tag">Music &amp; Entertainment Venues</span>
-        <span class="tag">Studios &amp; Creative Spaces</span>
-        <span class="tag">+ Any Business With a Community</span>
+    <div class="filter-chips">
+      <button class="chip active" onclick="setFilter('all', this)">All</button>
+      <button class="chip" onclick="setFilter('bar', this)">🍸 Bar</button>
+      <button class="chip" onclick="setFilter('terrace', this)">🌿 Terrace</button>
+      <button class="chip" onclick="setFilter('viewpoint', this)">🔭 Viewpoint</button>
+      <button class="chip" onclick="setFilter('pool', this)">🏊 Pool</button>
+      <button class="chip" onclick="setFilter('restaurant', this)">🍽 Restaurant</button>
     </div>
-    <blockquote class="pullquote reveal">
-        "If your regulars have a name for themselves, a table they always sit at, or a reason to come back — your business has a community. We'll make the merch."
-    </blockquote>
-</section>
 
-<!-- CTA -->
-<div class="cta-section" id="contact">
-    <p class="label label-center reveal">Get In Touch</p>
-    <h2 class="cta-headline reveal">Ready to talk?<br><em>We'll handle everything.</em></h2>
-    <p class="cta-sub reveal">No fees. No obligations. Just a conversation about what your merch could look like.</p>
-
-    <form class="contact-form reveal" id="contactForm">
-        <div class="form-row">
-            <div class="form-group">
-                <label for="name">Your Name</label>
-                <input type="text" id="name" name="name" placeholder="Jane Smith" required>
-            </div>
-            <div class="form-group">
-                <label for="business">Business Name</label>
-                <input type="text" id="business" name="business" placeholder="The Spot Chicago" required>
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" placeholder="you@yourbusiness.com" required>
-        </div>
-        <div class="form-group">
-            <label for="type">Business Type</label>
-            <select id="type" name="type">
-                <option value="" disabled selected>Select your category</option>
-                <option>Bar &amp; Nightlife</option>
-                <option>Gym &amp; Fitness Studio</option>
-                <option>Café &amp; Coffee Shop</option>
-                <option>Wellness &amp; Recovery Space</option>
-                <option>Plant &amp; Lifestyle Shop</option>
-                <option>Ice Cream &amp; Dessert</option>
-                <option>Restaurant &amp; Deli</option>
-                <option>Other</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="message">Anything else? (optional)</label>
-            <textarea id="message" name="message" placeholder="Tell us a bit about your business or what you're thinking..."></textarea>
-        </div>
-        <button type="submit" class="btn btn-gold form-submit">Let's Talk</button>
-        <p class="form-status" id="formStatus"></p>
-    </form>
+    <div class="spots-grid" id="spotsGrid"></div>
+  </div>
 </div>
 
-<!-- FOOTER -->
-<footer>
-    <div>
-        <div class="footer-logo">Fly<span>ify</span></div>
-        <p class="footer-sub">Free Merch For Your Business</p>
+<!-- MAP VIEW -->
+<div class="view" id="map-view">
+  <div class="map-container">
+    <div class="map-sidebar">
+      <div class="map-sidebar-header">
+        <div class="map-sidebar-title">📍 Rooftops Near You</div>
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" placeholder="Filter map…" id="mapSearchInput" oninput="filterMapList()">
+        </div>
+      </div>
+      <div class="map-list" id="mapList"></div>
     </div>
-    <div class="footer-right">
-        <p class="footer-city">Chicago, IL · 2026</p>
-        <a href="https://getflyify.com">getflyify.com</a>
-    </div>
-</footer>
+    <div id="leaflet-map"></div>
+  </div>
+</div>
 
+<!-- FEED VIEW -->
+<div class="view" id="feed-view">
+  <div class="feed-wrap">
+    <div class="feed-header">
+      <h2 class="feed-title">Community Feed</h2>
+      <p class="feed-sub">What roofers are sharing right now</p>
+    </div>
+
+    <div class="stories-row" id="storiesRow"></div>
+    <div id="feedPosts"></div>
+  </div>
+</div>
+
+<!-- SPOT DETAIL MODAL -->
+<div class="modal-overlay" id="spotModal" onclick="closeModal('spotModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hero" id="modalHero">
+      <div class="modal-hero-emoji" id="modalEmoji"></div>
+      <div class="modal-hero-overlay"></div>
+      <button class="modal-close" onclick="closeModal('spotModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-location" id="modalLocation"></div>
+      <h2 class="modal-name" id="modalName"></h2>
+      <div class="modal-rating-row" id="modalRatingRow"></div>
+      <p class="modal-desc" id="modalDesc"></p>
+      <div class="modal-info-grid" id="modalInfoGrid"></div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="handleGetDirections()">🗺 Get Directions</button>
+        <button class="btn-secondary" id="modalSaveBtn" onclick="handleModalSave()">🔖 Save</button>
+        <button class="btn-secondary" onclick="handleShare()">↑ Share</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POST MODAL -->
+<div class="modal-overlay" id="postModal" onclick="closeModal('postModal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="post-modal-body">
+      <h2 class="post-modal-title">Post a Rooftop 🏙️</h2>
+      <div class="upload-zone" onclick="showToast('📷', 'Photo upload coming soon!')">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">Add a photo</div>
+        <div class="upload-sub">Tap to upload</div>
+      </div>
+      <label class="post-label">Rooftop Name</label>
+      <input type="text" class="post-input" placeholder="e.g. Sky Garden London" id="postName">
+      <label class="post-label">City & Country</label>
+      <input type="text" class="post-input" placeholder="e.g. London, UK" id="postCity">
+      <label class="post-label">Category</label>
+      <select class="post-select" id="postCat">
+        <option value="">Select type</option>
+        <option value="bar">🍸 Rooftop Bar</option>
+        <option value="terrace">🌿 Terrace</option>
+        <option value="viewpoint">🔭 Viewpoint</option>
+        <option value="pool">🏊 Rooftop Pool</option>
+        <option value="restaurant">🍽 Restaurant</option>
+      </select>
+      <label class="post-label">Caption</label>
+      <textarea class="post-textarea" placeholder="Tell people what makes this rooftop special…" id="postCaption"></textarea>
+      <div class="post-modal-actions">
+        <button class="btn-secondary" onclick="closeModal('postModal')">Cancel</button>
+        <button class="btn-primary" onclick="submitPost()">✦ Post</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon"></span>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <button class="mobile-nav-btn active" id="mnav-discover" onclick="switchView('discover')">✦<span class="mobile-nav-label">Discover</span></button>
+    <button class="mobile-nav-btn" id="mnav-map" onclick="switchView('map')">◎<span class="mobile-nav-label">Map</span></button>
+    <button class="mobile-nav-btn" id="mnav-feed" onclick="switchView('feed')">◈<span class="mobile-nav-label">Feed</span></button>
+    <button class="mobile-nav-btn" onclick="openPostModal()">＋<span class="mobile-nav-label">Post</span></button>
+  </div>
+</nav>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) entry.target.classList.add('in');
-        });
-    }, { threshold: 0.08 });
+// ── DATA ──
+const SPOTS = [
+  {
+    id:1, name:"Vertigo Rooftop Bar", city:"Bangkok", country:"Thailand",
+    lat:13.7215, lng:100.5272, emoji:"🌆",
+    category:"bar", vibe:"Glamorous", rating:4.8, reviews:1842,
+    desc:"One of Asia's most spectacular rooftop bars perched 61 floors above Bangkok. Panoramic views of the Chao Phraya river and the glittering skyline.",
+    hours:"6pm – 1am", price:"$$$", bestTime:"Sunset", features:["Open air","Dress code","Cocktail menu"],
+    featured:true
+  },
+  {
+    id:2, name:"Sky Garden", city:"London", country:"UK",
+    lat:51.5112, lng:-0.0835, emoji:"🌿",
+    category:"terrace", vibe:"Lush", rating:4.5, reviews:3201,
+    desc:"A sprawling public garden in the sky at the top of the Walkie Talkie building. Free entry with pre-booked tickets, with bars and restaurants.",
+    hours:"10am – 6pm", price:"Free", bestTime:"Daytime", features:["Free entry","Indoor/outdoor","Bar available"],
+    featured:true
+  },
+  {
+    id:3, name:"Roppongi Hills Tokyo City View", city:"Tokyo", country:"Japan",
+    lat:35.6604, lng:139.7292, emoji:"🗼",
+    category:"viewpoint", vibe:"Urban", rating:4.7, reviews:5602,
+    desc:"Spectacular 360° panoramic views from 52 floors, including Tokyo Tower and Mt. Fuji on clear days. An essential Tokyo experience.",
+    hours:"10am – 11pm", price:"$$", bestTime:"Night", features:["Indoor+outdoor deck","Night views","Café"],
+    featured:false
+  },
+  {
+    id:4, name:"Marina Bay Sands Sky Park", city:"Singapore", country:"Singapore",
+    lat:1.2839, lng:103.8607, emoji:"🌊",
+    category:"pool", vibe:"Iconic", rating:4.9, reviews:8104,
+    desc:"The most photographed infinity pool in the world, stretching 150 metres across three hotel towers. Hotel guests only for the pool.",
+    hours:"6am – 11pm", price:"$$$$", bestTime:"Any", features:["Infinity pool","Hotel guests only","Observation deck"],
+    featured:true
+  },
+  {
+    id:5, name:"Terrass Hotel Montmartre", city:"Paris", country:"France",
+    lat:48.8854, lng:2.3370, emoji:"🗼",
+    category:"restaurant", vibe:"Romantic", rating:4.6, reviews:2109,
+    desc:"A legendary Parisian rooftop with views stretching from Montmartre all the way to the Eiffel Tower. The perfect spot for a sunset dinner.",
+    hours:"7pm – midnight", price:"$$$", bestTime:"Sunset", features:["Fine dining","Eiffel Tower view","Romantic"],
+    featured:false
+  },
+  {
+    id:6, name:"Klunkerkranich", city:"Berlin", country:"Germany",
+    lat:52.4808, lng:13.4380, emoji:"🎵",
+    category:"bar", vibe:"Eclectic", rating:4.4, reviews:1230,
+    desc:"Berlin's most beloved community rooftop garden on top of a shopping mall in Neukölln. A bohemian urban oasis with dancing, drinks, and sunsets.",
+    hours:"3pm – 2am (summer)", price:"$", bestTime:"Golden hour", features:["Garden","DJ sets","Dog friendly"],
+    featured:false
+  },
+  {
+    id:7, name:"Address Sky View Observatory", city:"Dubai", country:"UAE",
+    lat:25.1985, lng:55.2796, emoji:"🏙️",
+    category:"viewpoint", vibe:"Futuristic", rating:4.7, reviews:4230,
+    desc:"A glass slide and observatory at the top of a 52-floor skyscraper overlooking the Burj Khalifa and Dubai Fountain. Thrilling and breathtaking.",
+    hours:"10am – 11pm", price:"$$$", bestTime:"Evening", features:["Glass slide","Burj Khalifa view","Sky bridge"],
+    featured:true
+  },
+  {
+    id:8, name:"La Isabela Rooftop", city:"Cartagena", country:"Colombia",
+    lat:10.4238, lng:-75.5490, emoji:"🌺",
+    category:"bar", vibe:"Tropical", rating:4.5, reviews:872,
+    desc:"A stunning colonial rooftop overlooking the old walled city of Cartagena at sunset. Caribbean breezes, rum cocktails, and a view to die for.",
+    hours:"5pm – midnight", price:"$$", bestTime:"Sunset", features:["Caribbean views","Cocktails","Colonial city backdrop"],
+    featured:false
+  },
+  {
+    id:9, name:"Hotel Arts Barcelona", city:"Barcelona", country:"Spain",
+    lat:41.3886, lng:2.1977, emoji:"🌅",
+    category:"pool", vibe:"Mediterranean", rating:4.8, reviews:1605,
+    desc:"An outdoor pool bar overlooking the Mediterranean Sea and the Barcelona skyline. One of Europe's most glamorous terrace experiences.",
+    hours:"10am – 8pm", price:"$$$$", bestTime:"Midday", features:["Infinity pool","Sea view","Cocktail bar"],
+    featured:false
+  },
+  {
+    id:10, name:"Rooftop at The Met", city:"New York", country:"USA",
+    lat:40.7793, lng:-73.9632, emoji:"🌃",
+    category:"viewpoint", vibe:"Cultural", rating:4.6, reviews:3887,
+    desc:"Seasonal art installations atop The Metropolitan Museum of Art with one of Central Park's most dramatic vantage points. Free with museum admission.",
+    hours:"10am – 5:30pm (seasonal)", price:"$$ (museum entry)", bestTime:"Late afternoon", features:["Art installations","Central Park view","Seasonal"],
+    featured:false
+  },
+  {
+    id:11, name:"Stamba Rooftop", city:"Tbilisi", country:"Georgia",
+    lat:41.6918, lng:44.7968, emoji:"⛪",
+    category:"restaurant", vibe:"Historic", rating:4.7, reviews:641,
+    desc:"A beautifully curated terrace restaurant in a converted Soviet-era printing house. Extraordinary views over Tbilisi's ancient skyline and the Mtkvari River.",
+    hours:"12pm – 11pm", price:"$$$", bestTime:"Sunset", features:["Georgian cuisine","Historic setting","Garden bar"],
+    featured:false
+  },
+  {
+    id:12, name:"Signal Hill Viewpoint", city:"Cape Town", country:"South Africa",
+    lat:-33.9156, lng:18.3988, emoji:"🌄",
+    category:"viewpoint", vibe:"Natural", rating:4.9, reviews:5120,
+    desc:"The ultimate free rooftop in the world — a natural hilltop with 360° views of Cape Town, Table Mountain, and the Atlantic Ocean stretching to the horizon.",
+    hours:"24/7", price:"Free", bestTime:"Sunset", features:["Free","Natural viewpoint","Picnic friendly","Panoramic"],
+    featured:true
+  },
+];
 
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+const POSTS = [
+  {
+    id:1, user:"maya_onroofs", avatar:"🌙", avatarBg:"#6366f1", time:"2 hours ago",
+    spot:"Marina Bay Sands Sky Park", city:"Singapore",
+    emoji:"🌊", caption:"Woke up at 5am just to see this view. Zero regrets. The infinity pool at sunrise belongs in another dimension.",
+    tags:["#rooftoplife","#singapore","#infinitypool","#sunrise"],
+    likes:1248, comments:[ { user:"jake.travels", text:"Absolute bucket list." }, { user:"rooftops.daily", text:"That sunrise light 🔥" } ], totalComments:94,
+    spotId:4
+  },
+  {
+    id:2, user:"berlinrooftop", avatar:"🎵", avatarBg:"#8b5cf6", time:"5 hours ago",
+    spot:"Klunkerkranich", city:"Berlin, Germany",
+    emoji:"🎵", caption:"Saturday evening at Klunkerkranich. The DJ was on fire, the beer was cheap, and the whole of Neukölln was stretched out below us. This is what Berlin does.",
+    tags:["#berlin","#klunkerkranich","#rooftopbar","#summer"],
+    likes:847, comments:[ { user:"alex.b", text:"My favourite spot in Berlin, period." } ], totalComments:61,
+    spotId:6
+  },
+  {
+    id:3, user:"parisroofseeker", avatar:"🗼", avatarBg:"#ec4899", time:"Yesterday",
+    spot:"Terrass Hotel Montmartre", city:"Paris, France",
+    emoji:"🗼", caption:"Dinner at Terrass with the Eiffel Tower over my shoulder. Paris never looks better than when you're above it.",
+    tags:["#paris","#rooftop","#montmartre","#eiifeltower"],
+    likes:2103, comments:[ { user:"celine.r", text:"La meilleure vue de Paris !" }, { user:"nomad.lens", text:"That golden hour is unreal." } ], totalComments:187,
+    spotId:5
+  },
+  {
+    id:4, user:"tokyoskywalker", avatar:"🗼", avatarBg:"#0ea5e9", time:"2 days ago",
+    spot:"Roppongi Hills City View", city:"Tokyo, Japan",
+    emoji:"🗼", caption:"Waiting for it to be dark enough to see the lights of Tokyo stretch to infinity. Worth every yen of the entrance fee.",
+    tags:["#tokyo","#roppongi","#citylights","#japan"],
+    likes:3415, comments:[ { user:"sakura.wanders", text:"Did you see Fuji? I was there last week and barely could!" } ], totalComments:212,
+    spotId:3
+  },
+  {
+    id:5, user:"cape.sky", avatar:"🌄", avatarBg:"#22c55e", time:"3 days ago",
+    spot:"Signal Hill", city:"Cape Town, South Africa",
+    emoji:"🌄", caption:"Free. Open 24 hours. 360° views. Sometimes the best rooftop in the world is just a hill. Signal Hill, never stop being this beautiful.",
+    tags:["#capetown","#signalhill","#freeviews","#africa"],
+    likes:5891, comments:[ { user:"alex.freetravel", text:"This is why Cape Town is top of my list." }, { user:"hiking.and.roofs", text:"Watched the sunset here twice. Magic." } ], totalComments:441,
+    spotId:12
+  },
+];
 
-    // ── CONTACT FORM ──
-    const SHEET_URL = 'https://script.google.com/macros/s/AKfycbytUTOGhfVnuDfmZ19ln8ptj5oJ6I8lDxbeiEV2FuBoTiNLF2js8bG1wHvt_dm9w_0Hdw/exec';
+const STORIES = [
+  { user:"maya_onroofs", emoji:"🌊", ring:true },
+  { user:"berlinrooftop", emoji:"🎵", ring:true },
+  { user:"tokyoskywalker", emoji:"🗼", ring:true },
+  { user:"cape.sky", emoji:"🌄", ring:true },
+  { user:"la.terraza", emoji:"🌺", ring:true },
+  { user:"dubai.heights", emoji:"🏙️", ring:false },
+  { user:"barcelonavibes", emoji:"🌅", ring:false },
+  { user:"stamba.geo", emoji:"⛪", ring:false },
+];
 
-    document.getElementById('contactForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const btn    = this.querySelector('button[type=submit]');
-        const status = document.getElementById('formStatus');
-        const data   = Object.fromEntries(new FormData(this));
+// ── STATE ──
+let currentFilter = 'all';
+let savedSpots = new Set();
+let likedPosts = new Set();
+let savedPosts = new Set();
+let activeSpot = null;
+let leafletMap = null;
+let mapMarkers = [];
+let mapInitialized = false;
 
-        btn.textContent = 'Sending...';
-        btn.style.opacity = '0.7';
-        btn.disabled = true;
-        status.className = 'form-status';
-        status.textContent = '';
+// ── VIEW SWITCHING ──
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(view + '-view').classList.add('active');
+  document.querySelectorAll('.nav-tabs li a').forEach(a => a.classList.remove('active'));
+  const tab = document.getElementById('tab-' + view);
+  if (tab) tab.classList.add('active');
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  const mnav = document.getElementById('mnav-' + view);
+  if (mnav) mnav.classList.add('active');
 
-        try {
-            await fetch(SHEET_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...data, timestamp: new Date().toISOString() })
-            });
-            status.className = 'form-status success';
-            status.textContent = 'Got it — we\'ll be in touch soon.';
-            this.reset();
-        } catch (err) {
-            status.className = 'form-status error';
-            status.textContent = 'Something went wrong. Please try again.';
-        } finally {
-            btn.textContent = 'Let\'s Talk';
-            btn.style.opacity = '1';
-            btn.disabled = false;
-        }
+  if (view === 'map' && !mapInitialized) {
+    setTimeout(initMap, 100);
+  }
+}
+
+// ── FILTER ──
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderSpots();
+}
+
+function filterSpots() {
+  renderSpots();
+}
+
+function getFilteredSpots() {
+  const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  return SPOTS.filter(s => {
+    const matchCat = currentFilter === 'all' || s.category === currentFilter;
+    const matchQ = !q || s.name.toLowerCase().includes(q) || s.city.toLowerCase().includes(q) || s.country.toLowerCase().includes(q) || s.vibe.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+}
+
+// ── RENDER SPOTS ──
+function renderSpots() {
+  const grid = document.getElementById('spotsGrid');
+  const spots = getFilteredSpots();
+  grid.innerHTML = spots.map(s => spotCard(s)).join('');
+}
+
+function spotCard(s) {
+  const isSaved = savedSpots.has(s.id);
+  const stars = starsHTML(s.rating);
+  return `
+  <div class="spot-card" onclick="openSpot(${s.id})">
+    <div class="spot-img">
+      <div class="spot-img-bg">${s.emoji}</div>
+      <div class="spot-img-overlay"></div>
+      <div class="spot-badges">
+        ${s.featured ? '<span class="badge badge-amber">Featured</span>' : ''}
+        <span class="badge badge-sky">${categoryLabel(s.category)}</span>
+      </div>
+      <button class="spot-save ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave(${s.id}, this)">
+        ${isSaved ? '★' : '☆'}
+      </button>
+      <div class="spot-rating">★ ${s.rating}</div>
+    </div>
+    <div class="spot-body">
+      <div class="spot-location">📍 ${s.city}, ${s.country}</div>
+      <div class="spot-name">${s.name}</div>
+      <p class="spot-desc">${s.desc}</p>
+      <div class="spot-footer">
+        <div class="spot-meta">
+          <div class="spot-meta-item"><span>💬</span> ${(s.reviews).toLocaleString()}</div>
+          <div class="spot-meta-item"><span>🕐</span> ${s.hours}</div>
+        </div>
+        <span class="spot-vibe">${s.vibe}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function categoryLabel(cat) {
+  return { bar:'Bar', terrace:'Terrace', viewpoint:'Viewpoint', pool:'Pool', restaurant:'Restaurant' }[cat] || cat;
+}
+
+function starsHTML(rating) {
+  const full = Math.floor(rating);
+  const half = rating - full >= 0.5;
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    html += `<span class="star ${i > full && !(i === full+1 && half) ? 'empty' : ''}">★</span>`;
+  }
+  return html;
+}
+
+// ── SAVE / LIKE ──
+function toggleSave(id, btn) {
+  if (savedSpots.has(id)) {
+    savedSpots.delete(id);
+    btn.textContent = '☆';
+    btn.classList.remove('saved');
+    showToast('🔖', 'Removed from saved');
+  } else {
+    savedSpots.add(id);
+    btn.textContent = '★';
+    btn.classList.add('saved');
+    showToast('★', 'Saved to your list!');
+  }
+}
+
+// ── OPEN SPOT MODAL ──
+function openSpot(id) {
+  const s = SPOTS.find(x => x.id === id);
+  if (!s) return;
+  activeSpot = s;
+
+  document.getElementById('modalEmoji').textContent = s.emoji;
+  document.getElementById('modalLocation').textContent = `📍 ${s.city}, ${s.country}`;
+  document.getElementById('modalName').textContent = s.name;
+
+  const rr = document.getElementById('modalRatingRow');
+  rr.innerHTML = `
+    <div class="modal-stars">${starsHTML(s.rating)}</div>
+    <span class="modal-rating-num">${s.rating}</span>
+    <span class="modal-reviews">(${s.reviews.toLocaleString()} reviews)</span>
+    <span class="badge badge-sky modal-badge">${categoryLabel(s.category)}</span>
+    ${s.featured ? '<span class="badge badge-amber modal-badge">Featured</span>' : ''}
+  `;
+
+  document.getElementById('modalDesc').textContent = s.desc;
+
+  const ig = document.getElementById('modalInfoGrid');
+  ig.innerHTML = `
+    <div class="modal-info-item">
+      <div class="modal-info-label">Hours</div>
+      <div class="modal-info-value">${s.hours}</div>
+    </div>
+    <div class="modal-info-item">
+      <div class="modal-info-label">Price Range</div>
+      <div class="modal-info-value">${s.price}</div>
+    </div>
+    <div class="modal-info-item">
+      <div class="modal-info-label">Best Time</div>
+      <div class="modal-info-value">${s.bestTime}</div>
+    </div>
+    <div class="modal-info-item">
+      <div class="modal-info-label">Vibe</div>
+      <div class="modal-info-value">${s.vibe}</div>
+    </div>
+  `;
+
+  const saveBtn = document.getElementById('modalSaveBtn');
+  saveBtn.textContent = savedSpots.has(s.id) ? '★ Saved' : '🔖 Save';
+
+  document.getElementById('spotModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function handleModalSave() {
+  if (!activeSpot) return;
+  const btn = document.getElementById('modalSaveBtn');
+  if (savedSpots.has(activeSpot.id)) {
+    savedSpots.delete(activeSpot.id);
+    btn.textContent = '🔖 Save';
+    showToast('🔖', 'Removed from saved');
+  } else {
+    savedSpots.add(activeSpot.id);
+    btn.textContent = '★ Saved';
+    showToast('★', 'Saved to your list!');
+  }
+  renderSpots();
+}
+
+function handleGetDirections() {
+  if (!activeSpot) return;
+  showToast('🗺', `Opening directions to ${activeSpot.name}`);
+  setTimeout(() => {
+    window.open(`https://www.google.com/maps/search/?api=1&query=${activeSpot.lat},${activeSpot.lng}`, '_blank');
+  }, 400);
+}
+
+function handleShare() {
+  if (!activeSpot) return;
+  if (navigator.share) {
+    navigator.share({ title: activeSpot.name, text: `Check out ${activeSpot.name} in ${activeSpot.city} on Roofer!` });
+  } else {
+    showToast('↑', 'Link copied to clipboard!');
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── MAP ──
+function initMap() {
+  mapInitialized = true;
+  leafletMap = L.map('leaflet-map', { zoomControl: false }).setView([20, 10], 2);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors © CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(leafletMap);
+
+  L.control.zoom({ position: 'bottomright' }).addTo(leafletMap);
+
+  SPOTS.forEach(s => {
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="roofer-marker ${s.featured ? 'featured' : ''}"><div class="roofer-marker-inner">${s.emoji}</div></div>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 36],
     });
-</script>
 
+    const marker = L.marker([s.lat, s.lng], { icon }).addTo(leafletMap);
+    marker.bindPopup(`
+      <div class="popup-inner">
+        <div class="popup-emoji">${s.emoji}</div>
+        <div class="popup-name">${s.name}</div>
+        <div class="popup-loc">📍 ${s.city}, ${s.country}</div>
+        <div class="popup-rating">★ ${s.rating} <span style="color:var(--muted);font-weight:400">(${s.reviews.toLocaleString()})</span></div>
+        <button class="popup-btn" onclick="switchView('discover'); setTimeout(()=>openSpot(${s.id}),200)">View Details →</button>
+      </div>`, { maxWidth:260 });
+
+    marker.on('click', () => {
+      highlightMapItem(s.id);
+    });
+    mapMarkers.push({ id: s.id, marker });
+  });
+
+  renderMapList();
+}
+
+function renderMapList(filter) {
+  const list = document.getElementById('mapList');
+  const spots = filter
+    ? SPOTS.filter(s => s.name.toLowerCase().includes(filter) || s.city.toLowerCase().includes(filter))
+    : SPOTS;
+  list.innerHTML = spots.map(s => `
+    <div class="map-list-item" id="map-item-${s.id}" onclick="flyToSpot(${s.id})">
+      <div class="map-list-thumb">${s.emoji}</div>
+      <div class="map-list-info">
+        <div class="map-list-name">${s.name}</div>
+        <div class="map-list-loc">📍 ${s.city}</div>
+      </div>
+      <div class="map-list-rating">★ ${s.rating}</div>
+    </div>`).join('');
+}
+
+function filterMapList() {
+  const q = document.getElementById('mapSearchInput').value.toLowerCase();
+  renderMapList(q);
+}
+
+function flyToSpot(id) {
+  const s = SPOTS.find(x => x.id === id);
+  if (!s || !leafletMap) return;
+  leafletMap.flyTo([s.lat, s.lng], 14, { duration: 1.2 });
+  const m = mapMarkers.find(x => x.id === id);
+  if (m) setTimeout(() => m.marker.openPopup(), 1300);
+  highlightMapItem(id);
+}
+
+function highlightMapItem(id) {
+  document.querySelectorAll('.map-list-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('map-item-' + id);
+  if (el) { el.classList.add('active'); el.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+}
+
+// ── FEED ──
+function renderFeed() {
+  const storiesRow = document.getElementById('storiesRow');
+  storiesRow.innerHTML = STORIES.map(s => `
+    <div class="story" onclick="showToast('${s.emoji}', '${s.user}\'s story')">
+      <div class="story-ring">
+        <div class="story-avatar">${s.emoji}</div>
+      </div>
+      <span class="story-name">${s.user}</span>
+    </div>`).join('');
+
+  const feedPosts = document.getElementById('feedPosts');
+  feedPosts.innerHTML = POSTS.map(p => postCard(p)).join('');
+}
+
+function postCard(p) {
+  const isLiked = likedPosts.has(p.id);
+  const isSaved = savedPosts.has(p.id);
+  return `
+  <div class="post-card">
+    <div class="post-header">
+      <div class="post-avatar" style="background:${p.avatarBg}">${p.avatar}</div>
+      <div class="post-user">
+        <div class="post-username">@${p.user}</div>
+        <div class="post-time">${p.time}</div>
+      </div>
+      <div class="post-location-badge" onclick="switchView('discover'); setTimeout(()=>openSpot(${p.spotId}),200)">
+        📍 ${p.spot}
+      </div>
+    </div>
+    <div class="post-img">
+      <div class="post-img-bg">${p.emoji}</div>
+      <div class="post-img-gradient"></div>
+      <div class="post-img-overlay-text">
+        <span class="post-img-emoji">${p.emoji}</span>
+        <div class="post-img-name">${p.spot}</div>
+        <div class="post-img-city">${p.city}</div>
+      </div>
+    </div>
+    <div class="post-actions">
+      <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(${p.id}, this)">
+        <span>${isLiked ? '❤️' : '🤍'}</span> ${isLiked ? p.likes + 1 : p.likes}
+      </button>
+      <button class="action-btn" onclick="showToast('💬', 'Comment feature coming soon!')">
+        <span>💬</span> ${p.totalComments}
+      </button>
+      <button class="action-btn" onclick="showToast('↑', 'Link copied!')">
+        <span>↗️</span> Share
+      </button>
+      <div class="action-spacer"></div>
+      <button class="action-btn action-save ${isSaved ? 'saved' : ''}" onclick="togglePostSave(${p.id}, this)">
+        ${isSaved ? '🔖' : '🔗'}
+      </button>
+    </div>
+    <div class="post-body">
+      <div class="post-likes">${(isLiked ? p.likes + 1 : p.likes).toLocaleString()} likes</div>
+      <div class="post-caption"><strong>@${p.user}</strong> ${p.caption}</div>
+      <div class="post-tags">${p.tags.map(t => `<span class="post-tag">${t} </span>`).join('')}</div>
+    </div>
+    <div class="post-comments">
+      <div class="view-all-comments">View all ${p.totalComments} comments</div>
+      ${p.comments.map(c => `<div class="comment"><strong>@${c.user}</strong> ${c.text}</div>`).join('')}
+    </div>
+    <div class="post-comment-input">
+      <div class="comment-avatar">AJ</div>
+      <input type="text" class="comment-input" placeholder="Add a comment…">
+      <button class="comment-submit" onclick="showToast('💬', 'Comment posted!')">Post</button>
+    </div>
+  </div>`;
+}
+
+function toggleLike(id, btn) {
+  const p = POSTS.find(x => x.id === id);
+  if (!p) return;
+  if (likedPosts.has(id)) {
+    likedPosts.delete(id);
+    btn.classList.remove('liked');
+    btn.innerHTML = `<span>🤍</span> ${p.likes}`;
+    btn.closest('.post-card').querySelector('.post-likes').textContent = `${p.likes.toLocaleString()} likes`;
+  } else {
+    likedPosts.add(id);
+    btn.classList.add('liked');
+    btn.innerHTML = `<span>❤️</span> ${p.likes + 1}`;
+    btn.closest('.post-card').querySelector('.post-likes').textContent = `${(p.likes + 1).toLocaleString()} likes`;
+  }
+}
+
+function togglePostSave(id, btn) {
+  if (savedPosts.has(id)) {
+    savedPosts.delete(id);
+    btn.classList.remove('saved');
+    btn.textContent = '🔗';
+    showToast('🔗', 'Removed from saved');
+  } else {
+    savedPosts.add(id);
+    btn.classList.add('saved');
+    btn.textContent = '🔖';
+    showToast('🔖', 'Post saved!');
+  }
+}
+
+// ── POST MODAL ──
+function openPostModal() {
+  document.getElementById('postModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function submitPost() {
+  const name = document.getElementById('postName').value.trim();
+  const city = document.getElementById('postCity').value.trim();
+  if (!name || !city) { showToast('⚠️', 'Please fill in the rooftop name and city.'); return; }
+  closeModal('postModal');
+  document.getElementById('postName').value = '';
+  document.getElementById('postCity').value = '';
+  document.getElementById('postCaption').value = '';
+  showToast('🎉', 'Rooftop posted! Thanks for sharing.');
+}
+
+// ── TOAST ──
+let toastTimer = null;
+function showToast(icon, msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastIcon').textContent = icon;
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── INIT ──
+renderSpots();
+renderFeed();
+</script>
 </body>
 </html>
