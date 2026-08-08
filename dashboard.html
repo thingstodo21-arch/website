@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0D1A12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Merch Sales Dashboard</title>
+<style>
+:root{
+  --bg:#0D1A12; --bg-2:#111F16; --card:#14231A; --gold:#C9963F; --gold-lt:#D4A84B;
+  --text:#F0EBE1; --muted:#8A9C8E; --dim:#2E3D32; --border:#22331F;
+  --green:#4FA96A; --red:#D06A5A; --amber:#D4A84B;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  line-height:1.5; padding:0 0 40px; min-height:100vh;
+}
+body::after{
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:radial-gradient(ellipse 90% 60% at 100% 0%,rgba(201,150,63,.10) 0%,transparent 55%),
+             radial-gradient(ellipse 70% 50% at 0% 100%,rgba(30,80,45,.30) 0%,transparent 60%);
+}
+.wrap{position:relative; z-index:1; max-width:760px; margin:0 auto; padding:0 16px;}
+
+header{padding:22px 0 14px; display:flex; align-items:center; justify-content:space-between; gap:12px;}
+.brand{font-size:20px; font-weight:700; letter-spacing:-.02em;}
+.brand span{color:var(--gold);}
+.brand small{display:block; font-size:11px; font-weight:500; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin-top:2px;}
+.live{display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;}
+.dot{width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(79,169,106,.5); animation:pulse 2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(79,169,106,.5);}70%{box-shadow:0 0 0 8px rgba(79,169,106,0);}100%{box-shadow:0 0 0 0 rgba(79,169,106,0);}}
+
+/* Inventory cards */
+.inv-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:6px 0 18px;}
+.inv{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px 10px; text-align:center; position:relative; overflow:hidden;}
+.inv.total{background:linear-gradient(160deg,#1a2b1f,#14231a); border-color:#33482c;}
+.inv .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:6px;}
+.inv .num{font-size:30px; font-weight:700; line-height:1;}
+.inv.total .num{color:var(--gold);}
+.inv .sub{font-size:11px; color:var(--muted); margin-top:4px;}
+.inv .bar{height:4px; background:var(--dim); border-radius:2px; margin-top:9px; overflow:hidden;}
+.inv .bar i{display:block; height:100%; background:var(--gold); border-radius:2px; transition:width .4s ease;}
+.inv.low .num{color:var(--red);}
+.inv.low .bar i{background:var(--red);}
+
+.section-t{font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin:22px 4px 10px; font-weight:600;}
+
+/* Form card */
+.card{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px 16px;}
+label{display:block; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:7px;}
+input[type=text],input[type=number]{
+  width:100%; background:var(--bg-2); border:1px solid var(--border); border-radius:11px;
+  padding:13px 14px; color:var(--text); font-size:16px; font-family:inherit; outline:none; transition:border-color .2s;
+}
+input:focus{border-color:var(--gold);}
+input::placeholder{color:#5a6a5e;}
+
+.qty-row{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px;}
+.qty{background:var(--bg-2); border:1px solid var(--border); border-radius:12px; padding:10px; text-align:center;}
+.qty .qlbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em;}
+.qty .qavail{font-size:10px; color:#5a6a5e; margin-bottom:8px;}
+.stepper{display:flex; align-items:center; justify-content:center; gap:0;}
+.stepper button{
+  width:36px; height:36px; border:1px solid var(--border); background:var(--card); color:var(--gold);
+  font-size:20px; border-radius:9px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;
+}
+.stepper button:active{background:var(--gold); color:var(--bg);}
+.stepper input{width:44px; text-align:center; border:none; background:transparent; font-size:20px; font-weight:700; padding:0; -moz-appearance:textfield;}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+
+.price-row{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px;}
+.total-line{display:flex; justify-content:space-between; align-items:baseline; margin-top:16px; padding-top:14px; border-top:1px dashed var(--border);}
+.total-line .k{font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;}
+.total-line .v{font-size:24px; font-weight:700; color:var(--gold);}
+.total-line .v small{font-size:13px; color:var(--muted); font-weight:400;}
+
+.btn{
+  width:100%; margin-top:16px; padding:15px; border:none; border-radius:12px; background:var(--gold); color:#1a130a;
+  font-size:16px; font-weight:700; font-family:inherit; cursor:pointer; letter-spacing:.02em; transition:background .2s,transform .1s;
+}
+.btn:active{transform:scale(.99);}
+.btn:disabled{background:var(--dim); color:var(--muted); cursor:not-allowed;}
+.btn.ghost{background:transparent; border:1px solid var(--border); color:var(--text); font-weight:500;}
+.btn.ghost:active{background:var(--bg-2);}
+
+.msg{margin-top:12px; font-size:14px; text-align:center; min-height:20px; transition:opacity .3s;}
+.msg.ok{color:var(--green);} .msg.err{color:var(--red);}
+
+/* Stats bar */
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:0 0 4px;}
+.stat{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px 10px; text-align:center;}
+.stat .num{font-size:22px; font-weight:700; color:var(--gold);}
+.stat .lbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-top:3px;}
+
+/* Sales log */
+.log{display:flex; flex-direction:column; gap:8px;}
+.sale{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:12px;}
+.sale .who{flex:1; min-width:0;}
+.sale .who .nm{font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.sale .who .meta{font-size:12px; color:var(--muted); margin-top:2px;}
+.sale .amt{text-align:right; font-size:15px; font-weight:600; color:var(--gold); white-space:nowrap;}
+.sale .amt small{display:block; font-size:11px; color:var(--muted); font-weight:400;}
+.sale .del{width:30px; height:30px; flex:none; border:none; background:transparent; color:#5a6a5e; font-size:18px; cursor:pointer; border-radius:8px;}
+.sale .del:active{background:var(--bg-2); color:var(--red);}
+.pill{display:inline-block; font-size:11px; padding:1px 7px; border-radius:6px; background:var(--bg-2); border:1px solid var(--border); color:var(--muted); margin-right:4px;}
+.empty{text-align:center; color:var(--muted); font-size:14px; padding:24px 0;}
+
+.toolbar{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;}
+.foot{text-align:center; color:#5a6a5e; font-size:12px; margin-top:26px; line-height:1.7;}
+.foot a{color:var(--muted);}
+
+/* Modal */
+.modal{position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; padding:20px;}
+.modal.open{display:flex;}
+.modal .box{background:var(--bg-2); border:1px solid var(--border); border-radius:16px; padding:20px; width:100%; max-width:420px;}
+.modal h3{font-size:17px; margin-bottom:4px;}
+.modal p{font-size:13px; color:var(--muted); margin-bottom:14px;}
+.modal .mg{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:8px;}
+.modal .mg label{margin-bottom:4px;}
+
+@media(max-width:520px){
+  .inv-grid{grid-template-columns:repeat(2,1fr);}
+  .inv .num{font-size:26px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">Merch <span>Sales</span><small>T-Shirt Inventory Tracker</small></div>
+    <span class="live"><span class="dot"></span> Live</span>
+  </header>
+
+  <!-- INVENTORY -->
+  <div class="inv-grid" id="invGrid"></div>
+
+  <!-- NEW SALE -->
+  <div class="section-t">Record a Sale</div>
+  <div class="card">
+    <label for="buyer">Customer name</label>
+    <input type="text" id="buyer" placeholder="e.g. Jordan Miller" autocomplete="off">
+
+    <div class="qty-row" id="qtyRow"></div>
+
+    <div class="price-row">
+      <div>
+        <label for="price">Price / shirt ($)</label>
+        <input type="number" id="price" min="0" step="0.01" inputmode="decimal">
+      </div>
+      <div>
+        <label>Shirts selected</label>
+        <input type="text" id="shirtCount" value="0" readonly>
+      </div>
+    </div>
+
+    <div class="total-line">
+      <span class="k">Sale total</span>
+      <span class="v" id="saleTotal">$0<small></small></span>
+    </div>
+
+    <button class="btn" id="recordBtn">Record Sale &amp; Update Inventory</button>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="section-t">Totals</div>
+  <div class="stats" id="stats"></div>
+
+  <!-- LOG -->
+  <div class="section-t">Sales Log</div>
+  <div class="log" id="log"></div>
+
+  <div class="toolbar">
+    <button class="btn ghost" id="exportBtn">⬇ Export to Excel</button>
+    <button class="btn ghost" id="editBtn">✎ Edit Stock</button>
+  </div>
+
+  <div class="foot">
+    Saved on this device — works offline. Add to Home Screen for an app-like feel.<br>
+    <a href="#" id="resetLink">Reset all data</a>
+  </div>
+</div>
+
+<!-- Edit stock modal -->
+<div class="modal" id="editModal">
+  <div class="box">
+    <h3>Edit Starting Stock</h3>
+    <p>Set the total number of shirts you started with per size. You can't set a size below what's already been sold.</p>
+    <div class="mg">
+      <div><label>Small</label><input type="number" id="e_S" min="0"></div>
+      <div><label>Medium</label><input type="number" id="e_M" min="0"></div>
+      <div><label>Large</label><input type="number" id="e_L" min="0"></div>
+    </div>
+    <button class="btn" id="saveStock">Save</button>
+    <button class="btn ghost" id="cancelStock" style="margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var SIZES=[["S","Small"],["M","Medium"],["L","Large"]];
+  var KEY="merch_dashboard_v1";
+  var DEFAULTS={ initial:{S:7,M:14,L:14}, price:25, sales:[] };
+
+  // ---------- State ----------
+  var state=load();
+  function load(){
+    try{
+      var raw=localStorage.getItem(KEY);
+      if(raw){ var s=JSON.parse(raw);
+        s.initial=s.initial||{}; SIZES.forEach(function(z){ if(typeof s.initial[z[0]]!=="number") s.initial[z[0]]=DEFAULTS.initial[z[0]]; });
+        if(typeof s.price!=="number") s.price=DEFAULTS.price;
+        s.sales=Array.isArray(s.sales)?s.sales:[];
+        return s;
+      }
+    }catch(e){}
+    return JSON.parse(JSON.stringify(DEFAULTS));
+  }
+  function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+
+  function soldPerSize(){
+    var out={S:0,M:0,L:0};
+    state.sales.forEach(function(s){ SIZES.forEach(function(z){ out[z[0]]+=(s[z[0]]||0); }); });
+    return out;
+  }
+  function remaining(){
+    var sold=soldPerSize(), out={};
+    SIZES.forEach(function(z){ out[z[0]]=state.initial[z[0]]-sold[z[0]]; });
+    return out;
+  }
+
+  // ---------- Build size steppers ----------
+  var qtyRow=document.getElementById("qtyRow");
+  SIZES.forEach(function(z){
+    var d=document.createElement("div"); d.className="qty";
+    d.innerHTML='<div class="qlbl">'+z[1]+'</div><div class="qavail" id="av_'+z[0]+'"></div>'+
+      '<div class="stepper"><button type="button" data-s="'+z[0]+'" data-d="-1">&minus;</button>'+
+      '<input type="number" id="q_'+z[0]+'" value="0" min="0" inputmode="numeric">'+
+      '<button type="button" data-s="'+z[0]+'" data-d="1">+</button></div>';
+    qtyRow.appendChild(d);
+  });
+
+  function getQty(sz){ var v=parseInt(document.getElementById("q_"+sz).value,10); return isNaN(v)||v<0?0:v; }
+  function setQty(sz,v){ document.getElementById("q_"+sz).value=v; recalc(); }
+
+  qtyRow.addEventListener("click",function(e){
+    var b=e.target.closest("button[data-s]"); if(!b) return;
+    var sz=b.getAttribute("data-s"), dir=parseInt(b.getAttribute("data-d"),10);
+    var rem=remaining()[sz], v=getQty(sz)+dir;
+    if(v<0) v=0; if(v>rem) v=rem;
+    setQty(sz,v);
+  });
+  qtyRow.addEventListener("input",function(e){ if(e.target.id&&e.target.id.indexOf("q_")===0) recalc(); });
+
+  var priceEl=document.getElementById("price");
+  priceEl.value=state.price;
+  priceEl.addEventListener("input",function(){ state.price=parseFloat(priceEl.value)||0; save(); recalc(); });
+
+  // ---------- Render ----------
+  function money(n){ return "$"+(Math.round(n*100)/100).toLocaleString(undefined,{minimumFractionDigits:(n%1?2:0),maximumFractionDigits:2}); }
+
+  function renderInventory(){
+    var rem=remaining(), grid=document.getElementById("invGrid"); grid.innerHTML="";
+    SIZES.forEach(function(z){
+      var r=rem[z[0]], init=state.initial[z[0]], pct=init>0?Math.max(0,r/init*100):0;
+      var low=init>0 && r/init<=0.25;
+      var c=document.createElement("div"); c.className="inv"+(low?" low":"");
+      c.innerHTML='<div class="lbl">'+z[1]+'</div><div class="num">'+r+'</div>'+
+        '<div class="sub">of '+init+' left</div><div class="bar"><i style="width:'+pct+'%"></i></div>';
+      grid.appendChild(c);
+    });
+    var totRem=rem.S+rem.M+rem.L, totInit=state.initial.S+state.initial.M+state.initial.L;
+    var pct=totInit>0?totRem/totInit*100:0;
+    var t=document.createElement("div"); t.className="inv total";
+    t.innerHTML='<div class="lbl">Total Left</div><div class="num">'+totRem+'</div>'+
+      '<div class="sub">of '+totInit+' shirts</div><div class="bar"><i style="width:'+pct+'%"></i></div>';
+    grid.appendChild(t);
+
+    SIZES.forEach(function(z){ document.getElementById("av_"+z[0]).textContent=rem[z[0]]+" left"; });
+  }
+
+  function recalc(){
+    var rem=remaining(), count=0, over=false;
+    SIZES.forEach(function(z){ var q=getQty(z[0]); count+=q; if(q>rem[z[0]]) over=true; });
+    document.getElementById("shirtCount").value=count;
+    var tot=count*(parseFloat(priceEl.value)||0);
+    document.getElementById("saleTotal").innerHTML=money(tot)+"<small></small>";
+    var btn=document.getElementById("recordBtn");
+    btn.disabled = count===0 || over;
+    var msg=document.getElementById("msg");
+    if(over){ msg.className="msg err"; msg.textContent="Not enough stock for that order."; }
+    else if(msg.className==="msg err"){ msg.textContent=""; msg.className="msg"; }
+  }
+
+  function renderStats(){
+    var sold=soldPerSize(), totShirts=sold.S+sold.M+sold.L;
+    var rev=0; state.sales.forEach(function(s){ rev+=(s.total||0); });
+    var el=document.getElementById("stats");
+    el.innerHTML=
+      stat(totShirts,"Shirts Sold")+
+      stat(state.sales.length,"Orders")+
+      stat(money(rev),"Revenue");
+  }
+  function stat(n,l){ return '<div class="stat"><div class="num">'+n+'</div><div class="lbl">'+l+'</div></div>'; }
+
+  function renderLog(){
+    var log=document.getElementById("log");
+    if(!state.sales.length){ log.innerHTML='<div class="empty">No sales yet. Record your first one above.</div>'; return; }
+    log.innerHTML="";
+    state.sales.slice().reverse().forEach(function(s){
+      var pills=""; SIZES.forEach(function(z){ if(s[z[0]]) pills+='<span class="pill">'+s[z[0]]+' '+z[0]+'</span>'; });
+      var qty=(s.S||0)+(s.M||0)+(s.L||0);
+      var d=new Date(s.ts);
+      var when=d.toLocaleDateString(undefined,{month:"short",day:"numeric"})+" · "+d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+      var row=document.createElement("div"); row.className="sale";
+      row.innerHTML='<div class="who"><div class="nm">'+esc(s.name)+'</div>'+
+        '<div class="meta">'+pills+when+'</div></div>'+
+        '<div class="amt">'+money(s.total||0)+'<small>'+qty+' shirt'+(qty!==1?"s":"")+'</small></div>'+
+        '<button class="del" data-id="'+s.id+'" title="Delete">&times;</button>';
+      log.appendChild(row);
+    });
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
+
+  function renderAll(){ renderInventory(); renderStats(); renderLog(); recalc(); }
+
+  // ---------- Actions ----------
+  document.getElementById("recordBtn").addEventListener("click",function(){
+    var name=document.getElementById("buyer").value.trim();
+    var order={S:getQty("S"),M:getQty("M"),L:getQty("L")};
+    var qty=order.S+order.M+order.L;
+    var msg=document.getElementById("msg");
+    if(qty===0){ flash(msg,"err","Add at least one shirt."); return; }
+    if(!name) name="(no name)";
+    var rem=remaining(), bad=false;
+    SIZES.forEach(function(z){ if(order[z[0]]>rem[z[0]]) bad=true; });
+    if(bad){ flash(msg,"err","Not enough stock for that order."); return; }
+    var price=parseFloat(priceEl.value)||0;
+    state.sales.push({ id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+      name:name, S:order.S, M:order.M, L:order.L, price:price, total:qty*price, ts:Date.now() });
+    save();
+    document.getElementById("buyer").value="";
+    SIZES.forEach(function(z){ document.getElementById("q_"+z[0]).value=0; });
+    renderAll();
+    flash(msg,"ok","✓ Recorded "+qty+" shirt"+(qty!==1?"s":"")+" for "+esc(name));
+  });
+
+  document.getElementById("log").addEventListener("click",function(e){
+    var b=e.target.closest(".del"); if(!b) return;
+    var id=b.getAttribute("data-id");
+    var s=state.sales.filter(function(x){return x.id===id;})[0];
+    if(!s) return;
+    if(confirm("Delete "+s.name+"'s order? Shirts return to inventory.")){
+      state.sales=state.sales.filter(function(x){return x.id!==id;});
+      save(); renderAll();
+    }
+  });
+
+  function flash(el,cls,txt){ el.className="msg "+cls; el.textContent=txt;
+    if(cls==="ok"){ clearTimeout(el._t); el._t=setTimeout(function(){ el.textContent=""; el.className="msg"; },3500); } }
+
+  // ---------- Edit stock ----------
+  var modal=document.getElementById("editModal");
+  document.getElementById("editBtn").addEventListener("click",function(){
+    SIZES.forEach(function(z){ document.getElementById("e_"+z[0]).value=state.initial[z[0]]; });
+    modal.classList.add("open");
+  });
+  document.getElementById("cancelStock").addEventListener("click",function(){ modal.classList.remove("open"); });
+  modal.addEventListener("click",function(e){ if(e.target===modal) modal.classList.remove("open"); });
+  document.getElementById("saveStock").addEventListener("click",function(){
+    var sold=soldPerSize(), err=null, next={};
+    SIZES.forEach(function(z){
+      var v=parseInt(document.getElementById("e_"+z[0]).value,10); if(isNaN(v)||v<0) v=0;
+      if(v<sold[z[0]]) err=z[1]+" can't be below "+sold[z[0]]+" (already sold).";
+      next[z[0]]=v;
+    });
+    if(err){ alert(err); return; }
+    state.initial=next; save(); modal.classList.remove("open"); renderAll();
+  });
+
+  // ---------- Reset ----------
+  document.getElementById("resetLink").addEventListener("click",function(e){
+    e.preventDefault();
+    if(confirm("Erase ALL sales and reset inventory? This cannot be undone.")){
+      state=JSON.parse(JSON.stringify(DEFAULTS)); priceEl.value=state.price; save(); renderAll();
+    }
+  });
+
+  // ---------- Excel export ----------
+  document.getElementById("exportBtn").addEventListener("click",exportXlsx);
+  function exportXlsx(){
+    var rem=remaining(), sold=soldPerSize();
+    var salesRows=[["Date","Time","Customer","Small","Medium","Large","Total Shirts","Price/Shirt","Sale Total"]];
+    state.sales.forEach(function(s){
+      var d=new Date(s.ts), qty=(s.S||0)+(s.M||0)+(s.L||0);
+      salesRows.push([
+        d.toLocaleDateString(), d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"}),
+        s.name, s.S||0, s.M||0, s.L||0, qty, s.price||0, s.total||0 ]);
+    });
+    var rev=0; state.sales.forEach(function(s){ rev+=(s.total||0); });
+    salesRows.push([]);
+    salesRows.push(["","","TOTAL","","","",sold.S+sold.M+sold.L,"",rev]);
+
+    var invRows=[["Size","Started With","Sold","Remaining"]];
+    SIZES.forEach(function(z){ invRows.push([z[1], state.initial[z[0]], sold[z[0]], rem[z[0]]]); });
+    invRows.push(["TOTAL",
+      state.initial.S+state.initial.M+state.initial.L,
+      sold.S+sold.M+sold.L, rem.S+rem.M+rem.L]);
+
+    var wb=buildXlsx([{name:"Sales",rows:salesRows},{name:"Inventory",rows:invRows}]);
+    var stamp=new Date().toISOString().slice(0,10);
+    downloadBlob(wb,"merch-sales-"+stamp+".xlsx");
+  }
+
+  function downloadBlob(blob,fname){
+    var url=URL.createObjectURL(blob), a=document.createElement("a");
+    a.href=url; a.download=fname; document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },100);
+  }
+
+  // ----- Minimal XLSX (OpenXML) writer, zip "store" method -----
+  function buildXlsx(sheets){
+    var files=[];
+    files.push(["[Content_Types].xml",
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+      '<Default Extension="xml" ContentType="application/xml"/>'+
+      '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+      sheets.map(function(s,i){return '<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';}).join("")+
+      '</Types>']);
+    files.push(["_rels/.rels",
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'+
+      '</Relationships>']);
+    files.push(["xl/workbook.xml",
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'+
+      '<sheets>'+sheets.map(function(s,i){return '<sheet name="'+xmlEsc(s.name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>';}).join("")+'</sheets></workbook>']);
+    files.push(["xl/_rels/workbook.xml.rels",
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+      sheets.map(function(s,i){return '<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>';}).join("")+
+      '</Relationships>']);
+    sheets.forEach(function(s,i){ files.push(["xl/worksheets/sheet"+(i+1)+".xml", sheetXml(s.rows)]); });
+    return zipStore(files);
+  }
+  function colName(n){ var s=""; n++; while(n>0){ var m=(n-1)%26; s=String.fromCharCode(65+m)+s; n=Math.floor((n-1)/26); } return s; }
+  function sheetXml(rows){
+    var out='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+      '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+    rows.forEach(function(row,r){
+      out+='<row r="'+(r+1)+'">';
+      row.forEach(function(cell,c){
+        var ref=colName(c)+(r+1);
+        if(typeof cell==="number" && isFinite(cell)){
+          out+='<c r="'+ref+'"><v>'+cell+'</v></c>';
+        } else {
+          var t=(cell===null||cell===undefined)?"":String(cell);
+          if(t==="") { out+='<c r="'+ref+'"/>'; }
+          else out+='<c r="'+ref+'" t="inlineStr"><is><t xml:space="preserve">'+xmlEsc(t)+'</t></is></c>';
+        }
+      });
+      out+='</row>';
+    });
+    return out+'</sheetData></worksheet>';
+  }
+  function xmlEsc(s){ return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&apos;"}[c];}); }
+
+  // ---- zip (store / no compression) ----
+  function zipStore(files){
+    var enc=new TextEncoder(), chunks=[], central=[], offset=0;
+    files.forEach(function(f){
+      var nameBytes=enc.encode(f[0]), data=enc.encode(f[1]);
+      var crc=crc32(data);
+      var lh=header(30+nameBytes.length);
+      var dv=new DataView(lh.buffer);
+      dv.setUint32(0,0x04034b50,true); dv.setUint16(4,20,true); dv.setUint16(6,0,true);
+      dv.setUint16(8,0,true); dv.setUint16(10,0,true); dv.setUint16(12,0,true);
+      dv.setUint32(14,crc,true); dv.setUint32(18,data.length,true); dv.setUint32(22,data.length,true);
+      dv.setUint16(26,nameBytes.length,true); dv.setUint16(28,0,true);
+      lh.set(nameBytes,30);
+      chunks.push(lh,data);
+      var ch=header(46+nameBytes.length), cv=new DataView(ch.buffer);
+      cv.setUint32(0,0x02014b50,true); cv.setUint16(4,20,true); cv.setUint16(6,20,true);
+      cv.setUint16(8,0,true); cv.setUint16(10,0,true); cv.setUint16(12,0,true); cv.setUint16(14,0,true);
+      cv.setUint32(16,crc,true); cv.setUint32(20,data.length,true); cv.setUint32(24,data.length,true);
+      cv.setUint16(28,nameBytes.length,true); cv.setUint16(30,0,true); cv.setUint16(32,0,true);
+      cv.setUint16(34,0,true); cv.setUint16(36,0,true); cv.setUint32(38,0,true); cv.setUint32(42,offset,true);
+      ch.set(nameBytes,46);
+      central.push(ch);
+      offset+=lh.length+data.length;
+    });
+    var cdSize=central.reduce(function(a,b){return a+b.length;},0), cdOffset=offset;
+    central.forEach(function(c){ chunks.push(c); });
+    var end=header(22), ev=new DataView(end.buffer);
+    ev.setUint32(0,0x06054b50,true); ev.setUint16(4,0,true); ev.setUint16(6,0,true);
+    ev.setUint16(8,files.length,true); ev.setUint16(10,files.length,true);
+    ev.setUint32(12,cdSize,true); ev.setUint32(16,cdOffset,true); ev.setUint16(20,0,true);
+    chunks.push(end);
+    return new Blob(chunks,{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+  }
+  function header(n){ return new Uint8Array(n); }
+  var CRC_TABLE=(function(){ var t=[]; for(var n=0;n<256;n++){ var c=n; for(var k=0;k<8;k++){ c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1); } t[n]=c>>>0; } return t; })();
+  function crc32(bytes){ var c=0xFFFFFFFF; for(var i=0;i<bytes.length;i++){ c=CRC_TABLE[(c^bytes[i])&0xFF]^(c>>>8); } return (c^0xFFFFFFFF)>>>0; }
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
